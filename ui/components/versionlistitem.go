@@ -3,6 +3,7 @@ package marinacomponents
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -72,6 +73,6 @@ func (item *VersionListItemWidget) Update(name string, isDownloaded bool, downlo
 }
 
 func (item *VersionListItemWidget) CreateRenderer() fyne.WidgetRenderer {
-	c := container.NewBorder(nil, nil, item.leftContainer, item.rightContainer, nil)
+	c := container.NewBorder(nil, nil, container.NewVBox(layout.NewSpacer(), item.leftContainer, layout.NewSpacer()), container.NewVBox(layout.NewSpacer(), item.rightContainer, layout.NewSpacer()), nil)
 	return widget.NewSimpleRenderer(c)
 }

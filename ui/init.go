@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -44,11 +45,17 @@ func Init() {
 	w.ShowAndRun()
 }
 
-func initWindow(window fyne.Window) {
-	gameSelectorBox := container.NewVBox()
+var (
+	gameSelectorBox        = container.NewVBox()
+	selectedGameTitleLabel = widget.NewLabel(selectedGame.Name)
+)
 
+func initWindow(window fyne.Window) {
 	for _, def := range gamedefinitions.RepositoryDefinitions {
-		gameSelectorBox.Add(widget.NewButton(def.Name, func() { selectGame(def) }))
+		gameButton := widget.NewButton(def.Name, func() {
+			selectGame(def)
+		})
+		gameSelectorBox.Add(gameButton)
 	}
 
 	gameSelector := container.NewVScroll(
@@ -57,10 +64,16 @@ func initWindow(window fyne.Window) {
 
 	versionSelector := container.NewVScroll(versionList)
 
-	toolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {
-			versionmanager.SyncReleases()
-		}),
+	toolbar := container.NewBorder(
+		nil,
+		nil,
+		selectedGameTitleLabel,
+		widget.NewToolbar(
+			widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {
+				versionmanager.SyncReleases()
+			}),
+		),
+		container.New(layout.NewCenterLayout(), widget.NewLabel("Marina")),
 	)
 
 	window.SetContent(
@@ -77,6 +90,7 @@ func initWindow(window fyne.Window) {
 func selectGame(def *marina.RepositoryDefinition) {
 	selectedGame = def
 	versionList.Refresh()
+	selectedGameTitleLabel.SetText(def.Name)
 }
 
 func getCurrentGameVersions() *[]marina.VersionDefinition {
