@@ -1,43 +1,89 @@
 package marina
 
-import "runtime"
+import (
+	"errors"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"time"
+)
+
+type RomDefinition struct {
+	Name string
+	Sha1 string
+}
 
 type RepositoryDefinition struct {
 	Id                int
 	Name              string
 	Owner             string
 	Repository        string
-	AcceptedRomHashes []string
+	PathVariableName  string
+	AcceptedRomHashes *[]RomDefinition
 }
 
 type VersionDefinition struct {
-	Name               string
-	TagName            string
-	WindowsDownloadUrl string
-	LinuxDownloadUrl   string
-	MacDownloadUrl     string
+	RepositoryDefinition *RepositoryDefinition
+	Name                 string
+	TagName              string
+	ReleaseDate          time.Time
+	WindowsDownloadUrl   string
+	LinuxDownloadUrl     string
+	MacDownloadUrl       string
 }
 
-func (*VersionDefinition) IsDownloaded() bool {
+type ManifestItem struct {
+	Owner             string
+	Repository        string
+	InstalledRoms     *[]RomDefinition
+	InstalledTagNames *[]string
+}
+
+func (d *VersionDefinition) IsDownloaded() bool {
 	return false
 }
 
-func (d *VersionDefinition) GetDownloadUrl() string {
+func (d *VersionDefinition) GetDownloadUrl() (string, error) {
 	switch {
-	case runtime.GOOS == "linux":
-		return d.LinuxDownloadUrl
-	case runtime.GOOS == "mac":
-		return d.MacDownloadUrl
-	case runtime.GOOS == "windows":
-		return d.WindowsDownloadUrl
+	case runtime.GOOS == "linux" && len(d.LinuxDownloadUrl) > 0:
+		return d.LinuxDownloadUrl, nil
+	case runtime.GOOS == "mac" && len(d.MacDownloadUrl) > 0:
+		return d.MacDownloadUrl, nil
+	case runtime.GOOS == "windows" && len(d.WindowsDownloadUrl) > 0:
+		return d.WindowsDownloadUrl, nil
 	}
-	return ""
+	return "", errors.New("No compatible Version found")
+}
+
+func (d *VersionDefinition) GetVersionDirName() string {
+	return DirName(d.TagName)
 }
 
 func (d *VersionDefinition) IsOSCompatible() bool {
-	return len(d.GetDownloadUrl()) > 0
+	_, err := d.GetDownloadUrl()
+	return err == nil
+}
+
+func (d *VersionDefinition) GetVersionInstallDirPath(baseDir string) string {
+	return filepath.Join(baseDir, d.GetVersionDirName())
 }
 
 func (rd *RepositoryDefinition) HasRoms() bool {
 	return false
+}
+
+func (m *ManifestItem) GetVersionInstallRelativePaths() []string {
+	paths := []string{}
+
+	for _, tagName := range *m.InstalledTagNames {
+		path := filepath.Join(DirName(m.Repository), DirName(tagName))
+		paths = append(paths, path)
+	}
+
+	return paths
+}
+
+func DirName(name string) string {
+	replacer := strings.NewReplacer(" ", "-", ".", "_", "(", "", ")", "")
+	return replacer.Replace(strings.ToLower(name))
 }

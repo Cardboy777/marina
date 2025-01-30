@@ -2,7 +2,9 @@ package settings
 
 import (
 	"fmt"
+	"marina/constants"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -15,7 +17,7 @@ func ConfigInit() {
 		panic(fmt.Errorf("System Config Directory does not exist: %w", err))
 	}
 
-	configPath := fmt.Sprintf("%s%s", systemConfigPath, "/marina")
+	configPath := fmt.Sprintf("%s/%s", systemConfigPath, strings.ToLower(constants.AppName))
 	createConfigDirIfNotExist(configPath)
 
 	config.SetConfigName("config")
@@ -39,6 +41,12 @@ func ConfigInit() {
 }
 
 func setDefaults() {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		panic(fmt.Errorf("Error reading path of default cache dir: %w", err))
+	}
+
+	config.SetDefault("UserInstallDir", cacheDir)
 	config.SetDefault("UseLinuxCompatibilityVerions", false)
 	config.SetDefault("DownloadOSIncompatibleVersions", false)
 }
@@ -46,6 +54,10 @@ func setDefaults() {
 // Getters
 func ShouldUseLinuxCompatibilityVersion() bool {
 	return config.GetBool("UseLinuxCompatibilityVerions")
+}
+
+func GetInstallDir() string {
+	return config.GetString("UserInstallDir")
 }
 
 // Setters

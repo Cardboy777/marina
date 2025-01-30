@@ -31,17 +31,19 @@ func fetchVersions(definition *marina.RepositoryDefinition) []marina.VersionDefi
 		for _, i := range list {
 
 			item := marina.VersionDefinition{
-				Name:    (*i).GetName(),
-				TagName: (*i).GetTagName(),
+				RepositoryDefinition: definition,
+				Name:                 (*i).GetName(),
+				TagName:              (*i).GetTagName(),
 			}
 			for _, asset := range (*i).Assets {
 				name := asset.GetName()
 
-				if asset.GetContentType() != "application/zip" || strings.Contains(name, "Source Code") {
+				fmt.Printf("Name: %s\nContentType: %s\nKeep: %t\n\n", name, asset.GetContentType(), isValidAssetType(asset.GetContentType()))
+				if !isValidAssetType(asset.GetContentType()) || strings.Contains(name, "Source Code") {
 					continue
 				}
 
-				// fmt.Printf("Name: %s\nContentType: %s\nIsCompatible: %t\nURL: %s\n\n", name, asset.GetContentType(), isUsableLinuxAsset(name), asset.GetBrowserDownloadURL())
+				asset.GetCreatedAt()
 
 				switch {
 				case isUsableLinuxAsset(name):
@@ -49,9 +51,10 @@ func fetchVersions(definition *marina.RepositoryDefinition) []marina.VersionDefi
 				case strings.Contains(name, "Mac"):
 					item.MacDownloadUrl = asset.GetBrowserDownloadURL()
 				case true:
-					item.MacDownloadUrl = asset.GetBrowserDownloadURL()
+					item.WindowsDownloadUrl = asset.GetBrowserDownloadURL()
 				}
 			}
+			item.ReleaseDate = i.GetCreatedAt().Time
 			versions = append(versions, item)
 		}
 		if resp.NextPage == 0 {
@@ -63,10 +66,15 @@ func fetchVersions(definition *marina.RepositoryDefinition) []marina.VersionDefi
 	return versions
 }
 
+func isValidAssetType(name string) bool {
+	return name == "application/zip" || name == "application/x-zip-compressed"
+}
+
 func isUsableLinuxAsset(name string) bool {
 	if !strings.Contains(name, "Linux") {
 		return false
 	}
+
 	if settings.ShouldUseLinuxCompatibilityVersion() && strings.Contains(name, "Compatibility") {
 		return true
 	}
