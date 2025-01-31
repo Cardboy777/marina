@@ -1,4 +1,4 @@
-package gamedefinitions
+package constants
 
 import "marina/types"
 

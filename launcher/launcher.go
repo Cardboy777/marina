@@ -2,7 +2,7 @@ package launcher
 
 import (
 	"fmt"
-	"marina/filemanager"
+	"marina/files"
 	"marina/types"
 	"os"
 	"os/exec"
@@ -10,17 +10,17 @@ import (
 	"strings"
 )
 
-func LaunchGame(version *marina.VersionDefinition) error {
-	path := filemanager.GetVersionInstallDirPath(version)
+func LaunchGame(version *marina.VersionDefinition, onClose func(error)) error {
+	path := files.GetVersionInstallDirPath(version)
 
 	executable := getGameExecutablePath(path)
 
-	go runGame(executable)
+	go runGame(executable, onClose)
 
 	return nil
 }
 
-func runGame(exePath string) {
+func runGame(exePath string, onClose func(error)) {
 	args := os.Args
 
 	cmd := exec.Command(exePath, args[1:]...)
@@ -29,21 +29,23 @@ func runGame(exePath string) {
 	err := cmd.Run()
 	if err != nil {
 		fmt.Printf("\n\n==Start==\n\nExe: %s\n\nArgs: %s\n\nEnvironment: %s\n\nError: %s\n\n==End==\n\n", exePath, strings.Join(cmd.Env, " "), strings.Join(args, " "), err)
+		onClose(err)
 		return
 	}
 
 	fmt.Println("Successfully closed game.")
+	onClose(nil)
 }
 
 func getGameExecutablePath(dirName string) string {
-	files, err := os.ReadDir(dirName)
+	installFiles, err := os.ReadDir(dirName)
 	if err != nil {
 		panic(fmt.Errorf("Error locating executable: %w", err))
 	}
 
-	for _, f := range files {
+	for _, f := range installFiles {
 		name := f.Name()
-		if filemanager.IsExecutable(name) {
+		if files.IsExecutable(name) {
 			return filepath.Join(dirName, name)
 		}
 	}

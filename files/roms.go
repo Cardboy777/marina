@@ -1,4 +1,4 @@
-package rommanager
+package files
 
 import (
 	"crypto/sha1"

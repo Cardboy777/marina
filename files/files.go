@@ -1,4 +1,4 @@
-package filemanager
+package files
 
 import (
 	"archive/zip"
@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"marina/constants"
-	"marina/rommanager"
 	"marina/settings"
 	"marina/types"
 	"net/http"
@@ -187,7 +186,7 @@ func addRomToInstalledVersions(rom *marina.RomDefinition, repo *marina.Repositor
 }
 
 func CopyRomToInstallDir(repo *marina.RepositoryDefinition, sourcePath string) error {
-	bytes, rom, isValid := rommanager.IsValidRom(repo.AcceptedRomHashes, sourcePath)
+	bytes, rom, isValid := IsValidRom(repo.AcceptedRomHashes, sourcePath)
 	if !isValid {
 		return errors.New("Invalid ROM")
 	}

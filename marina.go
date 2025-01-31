@@ -1,13 +1,13 @@
 package main
 
 import (
-	"marina/filemanager"
+	"marina/files"
 	"marina/settings"
 	"marina/ui"
 )
 
 func main() {
 	settings.ConfigInit()
-	filemanager.Init()
-	fyneInit.Init()
+	files.Init()
+	ui.Init()
 }

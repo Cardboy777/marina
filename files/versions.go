@@ -1,11 +1,11 @@
-package versionmanager
+package files
 
 import (
 	"context"
 	"fmt"
+	"marina/constants"
 	"marina/settings"
 	"marina/types"
-	"marina/versionmanager/gamedefinitions"
 	"strings"
 
 	"github.com/google/go-github/v68/github"
@@ -85,7 +85,7 @@ func isUsableLinuxAsset(name string) bool {
 }
 
 func SyncReleases() {
-	for _, def := range gamedefinitions.RepositoryDefinitions {
+	for _, def := range constants.RepositoryDefinitions {
 		versions := fetchVersions(def)
 		if len(versionLists) <= def.Id {
 			versionLists = append(versionLists, versions)
