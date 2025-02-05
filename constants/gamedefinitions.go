@@ -3,12 +3,17 @@ package constants
 import "marina/types"
 
 var (
-	SohDefinition = marina.RepositoryDefinition{
+	SohDefinition = marina.Repository{
 		Id:         0,
 		Name:       "Ship of Harkinian",
 		Owner:      "HarbourMasters",
 		Repository: "Shipwright",
-		AcceptedRomHashes: &[]marina.RomDefinition{
+		LatestBuildUrls: marina.DownloadUrls{
+			Windows: "https://nightly.link/HarbourMasters/Shipwright/workflows/generate-builds/develop/soh-windows.zip",
+			Linux:   "https://nightly.link/HarbourMasters/Shipwright/workflows/generate-builds/develop/soh-linux.zip",
+			Mac:     "https://nightly.link/HarbourMasters/Shipwright/workflows/generate-builds/develop/soh-mac.zip",
+		},
+		AcceptedRomHashes: &[]marina.Rom{
 			{
 				Name: "PAL 1.0",
 				Sha1: "328a1f1beba30ce5e178f031662019eb32c5f3b5",
@@ -43,12 +48,17 @@ var (
 			},
 		},
 	}
-	TwoShipDefinition = marina.RepositoryDefinition{
+	TwoShipDefinition = marina.Repository{
 		Id:         1,
 		Name:       "2 Ship 2 Harkinian",
 		Owner:      "HarbourMasters",
 		Repository: "2Ship2Harkinian",
-		AcceptedRomHashes: &[]marina.RomDefinition{
+		LatestBuildUrls: marina.DownloadUrls{
+			Windows: "https://nightly.link/HarbourMasters/2ship2harkinian/workflows/main/develop/2ship-windows.zip",
+			Linux:   "https://nightly.link/HarbourMasters/2ship2harkinian/workflows/main/develop/2ship-linux.zip",
+			Mac:     "https://nightly.link/HarbourMasters/2ship2harkinian/workflows/main/develop/2ship-mac.zip",
+		},
+		AcceptedRomHashes: &[]marina.Rom{
 			{
 				Name: "NTSC-U 1.0",
 				Sha1: "d6133ace5afaa0882cf214cf88daba39e266c078",
@@ -59,18 +69,27 @@ var (
 			},
 		},
 	}
-	StarshipDefinition = marina.RepositoryDefinition{
+	StarshipDefinition = marina.Repository{
 		Id:         2,
 		Name:       "Starship",
 		Owner:      "HarbourMasters",
 		Repository: "Starship",
-		AcceptedRomHashes: &[]marina.RomDefinition{
+		LatestBuildUrls: marina.DownloadUrls{
+			Windows: "https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-windows.zip",
+			Linux:   "https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-mac-x64.zip",
+			Mac:     "https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-linux.zip",
+		},
+		AcceptedRomHashes: &[]marina.Rom{
+			{
+				Name: "USA 1.1 Rev A (Compressed)",
+				Sha1: "09f0d105f476b00efa5303a3ebc42e60a7753b7a",
+			},
 			{
 				Name: "USA 1.1 Rev A",
-				Sha1: "09F0D105F476B00EFA5303A3EBC42E60A7753B7A",
+				Sha1: "f7475fb11e7e6830f82883412638e8390791ab87",
 			},
 		},
 	}
 )
 
-var RepositoryDefinitions = []*marina.RepositoryDefinition{&SohDefinition, &TwoShipDefinition, &StarshipDefinition}
+var Repositories = []*marina.Repository{&SohDefinition, &TwoShipDefinition, &StarshipDefinition}

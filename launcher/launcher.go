@@ -7,13 +7,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
-func LaunchGame(version *marina.VersionDefinition, onClose func(error)) error {
+func LaunchGame(version *marina.Version, onClose func(error)) error {
 	path := files.GetVersionInstallDirPath(version)
 
 	executable := getGameExecutablePath(path)
+
+	fmt.Println(executable)
 
 	go runGame(executable, onClose)
 
@@ -28,7 +29,6 @@ func runGame(exePath string, onClose func(error)) {
 
 	err := cmd.Run()
 	if err != nil {
-		fmt.Printf("\n\n==Start==\n\nExe: %s\n\nArgs: %s\n\nEnvironment: %s\n\nError: %s\n\n==End==\n\n", exePath, strings.Join(cmd.Env, " "), strings.Join(args, " "), err)
 		onClose(err)
 		return
 	}

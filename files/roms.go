@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func IsValidRom(validHashes *[]marina.RomDefinition, filepath string) (*[]byte, marina.RomDefinition, bool) {
+func IsValidRom(validHashes *[]marina.Rom, filepath string) (*[]byte, marina.Rom, bool) {
 	hasher := sha1.New()
 
 	file, err := os.Open(filepath)
@@ -33,5 +33,5 @@ func IsValidRom(validHashes *[]marina.RomDefinition, filepath string) (*[]byte, 
 		}
 	}
 
-	return nil, marina.RomDefinition{}, false
+	return nil, marina.Rom{}, false
 }

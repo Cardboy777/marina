@@ -3,8 +3,10 @@ package ui
 import (
 	"fmt"
 	"marina/constants"
+	"marina/db"
 	"marina/files"
 	"marina/launcher"
+	"marina/stores"
 	"marina/types"
 	"marina/ui/widgets"
 	"strings"
@@ -24,12 +26,10 @@ func GetPrimaryWindow() *fyne.Window {
 func CreateMainWindow(app *fyne.App) {
 	window := (*app).NewWindow("Marina - Ship Launcher")
 	PrimaryWindow = &window
-	window.Resize(fyne.Size{Width: 640, Height: 400})
+	window.Resize(fyne.Size{Width: 1000, Height: 600})
 
 	initWindow(window)
 	selectGame(selectedGame)
-	go files.SyncReleases()
-
 	window.ShowAndRun()
 }
 
@@ -40,7 +40,7 @@ var (
 )
 
 func initWindow(window fyne.Window) {
-	for _, def := range constants.RepositoryDefinitions {
+	for _, def := range constants.Repositories {
 		gameButton := widget.NewButton(def.Name, func() {
 			selectGame(def)
 		})
@@ -50,7 +50,7 @@ func initWindow(window fyne.Window) {
 	gameSelector := container.NewVScroll(
 		gameSelectorBox,
 	)
-	gameSelector.SetMinSize(fyne.NewSize(0, float32(len(constants.RepositoryDefinitions)*40)))
+	gameSelector.SetMinSize(fyne.NewSize(0, float32(len(constants.Repositories)*40)))
 
 	versionSelector := container.NewVScroll(versionList)
 
@@ -60,7 +60,7 @@ func initWindow(window fyne.Window) {
 		selectedGameTitleLabel,
 		widget.NewToolbar(
 			widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {
-				files.SyncReleases()
+				syncReleases(true)
 			}),
 		),
 		container.NewCenter(widget.NewLabel(constants.AppName)),
@@ -99,23 +99,26 @@ func onFilesSelected(path string, err error) {
 	updateRomText()
 }
 
-func selectGame(def *marina.RepositoryDefinition) {
+func selectGame(def *marina.Repository) {
 	selectedGame = def
 	versionList.Refresh()
 	selectedGameTitleLabel.SetText(def.Name)
 	updateRomText()
+
+	versions := getCurrentGameVersions()
+
+	if len(*versions) == 0 {
+		go syncReleases(false)
+	}
 }
 
-func getCurrentGameVersions() *[]marina.VersionDefinition {
-	versionList := *files.GetVersionsList()
-	if len(versionList) <= selectedGame.Id {
-		return &([]marina.VersionDefinition{})
-	}
-	return &(versionList[selectedGame.Id])
+func getCurrentGameVersions() *[]marina.Version {
+	versions := stores.GetVersions(selectedGame)
+	return versions
 }
 
 func updateRomText() {
-	roms := files.GetInstalledRoms(selectedGame)
+	roms := stores.GetInstalledRomsList(selectedGame)
 	if roms == nil || len(*roms) == 0 {
 		installedRomsLabel.SetText("None")
 		return
@@ -124,7 +127,8 @@ func updateRomText() {
 	for _, r := range *roms {
 		names = append(names, r.Name)
 	}
-	installedRomsLabel.SetText(strings.Join(names, ", "))
+	installedRomsLabel.SetText(strings.Join(names, "\n"))
+	installedRomsLabel.Refresh()
 }
 
 var selectedGame = &constants.SohDefinition
@@ -143,7 +147,7 @@ var versionList = widget.NewList(
 		item.Update(&vDef)
 	})
 
-func playVersion(version *marina.VersionDefinition, onClose func()) {
+func playVersion(version *marina.Version, onClose func()) {
 	files.CopyRomsToVersionInstall(version)
 	err := launcher.LaunchGame(version, func(e error) {
 		if e != nil {
@@ -156,7 +160,7 @@ func playVersion(version *marina.VersionDefinition, onClose func()) {
 	}
 }
 
-func downloadVersion(version *marina.VersionDefinition, update func()) {
+func downloadVersion(version *marina.Version, update func()) {
 	err := files.DownloadVersion(version)
 	if err != nil {
 		ShowErrorDialog(err)
@@ -165,7 +169,7 @@ func downloadVersion(version *marina.VersionDefinition, update func()) {
 	update()
 }
 
-func deleteVersion(version *marina.VersionDefinition, update func()) {
+func deleteVersion(version *marina.Version, update func()) {
 	ShowConfirmDialog("Delete", fmt.Sprintf("Delete %s?", version.Name), func(shouldDelete bool) {
 		if !shouldDelete {
 			return
@@ -175,6 +179,16 @@ func deleteVersion(version *marina.VersionDefinition, update func()) {
 			ShowErrorDialog(err)
 			return
 		}
+		version.Installed = false
+		db.SetInstalled(version, false)
 		update()
 	})
+}
+
+func syncReleases(force bool) {
+	err := files.SyncReleases(selectedGame, force)
+	if err != nil {
+		ShowErrorDialog(err)
+	}
+	versionList.Refresh()
 }

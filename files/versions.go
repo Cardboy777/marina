@@ -3,58 +3,61 @@ package files
 import (
 	"context"
 	"fmt"
-	"marina/constants"
-	"marina/settings"
+	"marina/stores"
 	"marina/types"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/v68/github"
 )
 
-var versionLists = [][]marina.VersionDefinition{}
-
-func fetchVersions(definition *marina.RepositoryDefinition) []marina.VersionDefinition {
-	versions := []marina.VersionDefinition{}
-
+func fetchReleaseVersions(definition *marina.Repository) ([]marina.Version, error) {
 	client := github.NewClient(nil)
 	ctx := context.Background()
 	listRequestOptions := github.ListOptions{}
+	versions := []marina.Version{}
 
 	for {
 		list, resp, err := client.Repositories.ListReleases(ctx, definition.Owner, definition.Repository, &listRequestOptions)
+		if _, ok := err.(*github.RateLimitError); ok {
+			return nil, fmt.Errorf("Rate Limit for Public api reached, Try again later.")
+		}
 		if err != nil {
-			// probably rate limit reached
-			// or offline
-			panic(fmt.Errorf("Error Accessing GitHub: %w", err))
+			return nil, fmt.Errorf("Error Accessing GitHub: %w", err)
 		}
 
 		for _, i := range list {
 
-			item := marina.VersionDefinition{
-				RepositoryDefinition: definition,
-				Name:                 (*i).GetName(),
-				TagName:              (*i).GetTagName(),
+			item := marina.Version{
+				Repository: definition,
+				Name:       (*i).GetName(),
+				TagName:    (*i).GetTagName(),
 			}
 			for _, asset := range (*i).Assets {
 				name := asset.GetName()
 
-				fmt.Printf("Name: %s\nContentType: %s\nKeep: %t\n\n", name, asset.GetContentType(), isValidAssetType(asset.GetContentType()))
 				if !isValidAssetType(asset.GetContentType()) || strings.Contains(name, "Source Code") {
 					continue
 				}
 
 				asset.GetCreatedAt()
 
+				containsLinux := strings.Contains(name, "Linux")
+				containsCompatibility := strings.Contains(name, "Compatibility")
+
 				switch {
-				case isUsableLinuxAsset(name):
-					item.LinuxDownloadUrl = asset.GetBrowserDownloadURL()
-				case strings.Contains(name, "Mac"):
-					item.MacDownloadUrl = asset.GetBrowserDownloadURL()
+				case containsLinux && containsCompatibility:
+					item.DownloadUrls.LinuxCompatibility = asset.GetBrowserDownloadURL()
+				case containsLinux && !containsCompatibility:
+					item.DownloadUrls.Linux = asset.GetBrowserDownloadURL()
+				case strings.HasSuffix(name, "Mac.zip"):
+					item.DownloadUrls.Mac = asset.GetBrowserDownloadURL()
 				case true:
-					item.WindowsDownloadUrl = asset.GetBrowserDownloadURL()
+					item.DownloadUrls.Windows = asset.GetBrowserDownloadURL()
 				}
 			}
 			item.ReleaseDate = i.GetCreatedAt().Time
+
 			versions = append(versions, item)
 		}
 		if resp.NextPage == 0 {
@@ -63,42 +66,69 @@ func fetchVersions(definition *marina.RepositoryDefinition) []marina.VersionDefi
 		listRequestOptions.Page = resp.NextPage
 	}
 
-	return versions
+	return versions, nil
+}
+
+func fetchLatestCommit(definition *marina.Repository) (*marina.UnstableVersion, error) {
+	client := github.NewClient(nil)
+	ctx := context.Background()
+
+	repo, _, err := client.Repositories.Get(ctx, definition.Owner, definition.Repository)
+	if _, ok := err.(*github.RateLimitError); ok {
+		return nil, fmt.Errorf("Rate Limit for Public api reached, Try again later.")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("Error Accessing GitHub: %w", err)
+	}
+
+	branchName := repo.GetDefaultBranch()
+
+	branch, _, err := client.Repositories.GetBranch(ctx, definition.Owner, definition.Repository, branchName, 5)
+	if _, ok := err.(*github.RateLimitError); ok {
+		return nil, fmt.Errorf("Rate Limit for Public api reached, Try again later.")
+	}
+	if err != nil {
+		panic(fmt.Errorf("Error Accessing GitHub: %w", err))
+	}
+
+	latestCommit := branch.GetCommit()
+
+	return &marina.UnstableVersion{
+		Repository:  definition,
+		Hash:        *latestCommit.SHA,
+		ReleaseDate: latestCommit.Commit.Committer.GetDate().Time,
+	}, nil
 }
 
 func isValidAssetType(name string) bool {
 	return name == "application/zip" || name == "application/x-zip-compressed"
 }
 
-func isUsableLinuxAsset(name string) bool {
-	if !strings.Contains(name, "Linux") {
-		return false
-	}
-
-	if settings.ShouldUseLinuxCompatibilityVersion() && strings.Contains(name, "Compatibility") {
-		return true
-	}
-	if !settings.ShouldUseLinuxCompatibilityVersion() && strings.Contains(name, "Performance") {
-		return true
-	}
-	return !strings.Contains(name, "Compatibility") && !strings.Contains(name, "Performance")
-}
-
-func SyncReleases() {
-	for _, def := range constants.RepositoryDefinitions {
-		versions := fetchVersions(def)
-		if len(versionLists) <= def.Id {
-			versionLists = append(versionLists, versions)
-		} else {
-			versionLists[def.Id] = versions
+func SyncReleases(repository *marina.Repository, force bool) error {
+	if !force {
+		timeLastFetched := stores.GetLastFetched(repository)
+		timeCutoff := time.Now().Add(time.Duration(-1) * time.Hour)
+		if timeLastFetched != nil && timeLastFetched.After(timeCutoff) {
+			return nil
 		}
-
 	}
-	go writeVersionsToManifest()
-}
 
-func GetVersionsList() *[][]marina.VersionDefinition {
-	return &versionLists
-}
+	versions, err := fetchReleaseVersions(repository)
+	if err != nil {
+		return err
+	}
+	for _, v := range versions {
+		stores.AddVersion(&v)
+	}
 
-func writeVersionsToManifest() {}
+	latestCommit, err := fetchLatestCommit(repository)
+	if err != nil {
+		return err
+	}
+
+	stores.AddUnstableVersion(latestCommit, false)
+
+	stores.UpdateLastFetched(repository, time.Now())
+
+	return nil
+}

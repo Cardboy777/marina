@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"marina/constants"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -11,7 +12,7 @@ import (
 
 var config = viper.New()
 
-func ConfigInit() {
+func Init() {
 	systemConfigPath, err := os.UserConfigDir()
 	if err != nil {
 		panic(fmt.Errorf("System Config Directory does not exist: %w", err))
@@ -56,10 +57,6 @@ func ShouldUseLinuxCompatibilityVersion() bool {
 	return config.GetBool("UseLinuxCompatibilityVerions")
 }
 
-func GetInstallDir() string {
-	return config.GetString("UserInstallDir")
-}
-
 // Setters
 func SetLinuxCompatibility(useCompatibilityVersion bool) {
 	config.Set("UseLinuxCompatibilityVerions", useCompatibilityVersion)
@@ -83,4 +80,8 @@ func saveChanges() {
 	if err != nil {
 		panic(fmt.Errorf("Error writing config file: %w", err))
 	}
+}
+
+func GetInstallDirName() string {
+	return filepath.Join(config.GetString("UserInstallDir"), strings.ToLower(constants.AppName))
 }
