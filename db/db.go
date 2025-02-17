@@ -7,7 +7,7 @@ import (
 	"marina/settings"
 	"path/filepath"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const dbFileName = "manifest.db"
@@ -18,7 +18,7 @@ func Init() {
 	installDir := settings.GetInstallDirName()
 
 	dbFilePath := fmt.Sprintf("%s?_busy_timeout=5000", filepath.Join(installDir, dbFileName))
-	database, err := sql.Open("sqlite", dbFilePath)
+	database, err := sql.Open("sqlite3", dbFilePath)
 	if err != nil {
 		panic(fmt.Errorf("Error opening manifest db: %w", err))
 	}

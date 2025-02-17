@@ -62,7 +62,7 @@ func initWindow(window fyne.Window) {
 		selectedGameTitleLabel,
 		widget.NewToolbar(
 			widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {
-				syncReleases(true)
+				go syncReleases(true)
 			}),
 		),
 		container.NewCenter(widget.NewLabel(constants.AppName)),
@@ -107,7 +107,7 @@ func selectGame(def *marina.Repository) {
 	selectedGameTitleLabel.SetText(def.Name)
 	updateRomText()
 
-	syncReleases(false)
+	go syncReleases(false)
 }
 
 func getCurrentGameVersions() *[]widgets.ListItem {
