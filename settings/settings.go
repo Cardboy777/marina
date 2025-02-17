@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/adrg/xdg"
 	"github.com/spf13/viper"
 )
 
@@ -42,25 +43,7 @@ func Init() {
 }
 
 func setDefaults() {
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		panic(fmt.Errorf("Error reading path of default cache dir: %w", err))
-	}
-
-	config.SetDefault("UserInstallDir", cacheDir)
-	config.SetDefault("UseLinuxCompatibilityVerions", false)
-	config.SetDefault("DownloadOSIncompatibleVersions", false)
-}
-
-// Getters
-func ShouldUseLinuxCompatibilityVersion() bool {
-	return config.GetBool("UseLinuxCompatibilityVerions")
-}
-
-// Setters
-func SetLinuxCompatibility(useCompatibilityVersion bool) {
-	config.Set("UseLinuxCompatibilityVerions", useCompatibilityVersion)
-	saveChanges()
+	config.SetDefault("InstallDir", GetDefaultInstallDir())
 }
 
 func createConfigDirIfNotExist(path string) {
@@ -75,6 +58,16 @@ func createConfigDirIfNotExist(path string) {
 	}
 }
 
+func GetDefaultInstallDir() string {
+	return xdg.DataHome
+}
+
+func SetInstallDir(dir string) {
+	config.Set("InstallDir", dir)
+
+	saveChanges()
+}
+
 func saveChanges() {
 	err := config.WriteConfig()
 	if err != nil {
@@ -83,5 +76,5 @@ func saveChanges() {
 }
 
 func GetInstallDirName() string {
-	return filepath.Join(config.GetString("UserInstallDir"), strings.ToLower(constants.AppName))
+	return filepath.Join(config.GetString("InstallDir"), strings.ToLower(constants.AppName))
 }

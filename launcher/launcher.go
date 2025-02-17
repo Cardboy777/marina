@@ -11,8 +11,16 @@ import (
 
 func LaunchGame(version *marina.Version, onClose func(error)) error {
 	path := files.GetVersionInstallDirPath(version)
+	return launch(path, onClose)
+}
 
-	executable := getGameExecutablePath(path)
+func LaunchUnstableGame(version *marina.UnstableVersion, onClose func(error)) error {
+	path := files.GetUnstableVersionInstallDirPath(version)
+	return launch(path, onClose)
+}
+
+func launch(installPath string, onClose func(error)) error {
+	executable := getGameExecutablePath(installPath)
 
 	fmt.Println(executable)
 
@@ -24,8 +32,10 @@ func LaunchGame(version *marina.Version, onClose func(error)) error {
 func runGame(exePath string, onClose func(error)) {
 	args := os.Args
 
+	workingDirectory := filepath.Dir(exePath)
 	cmd := exec.Command(exePath, args[1:]...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("SHIP_HOME=%s", filepath.Dir(exePath)))
+	cmd.Dir = workingDirectory
+	cmd.Env = append(os.Environ(), fmt.Sprintf("SHIP_HOME=%s", workingDirectory))
 
 	err := cmd.Run()
 	if err != nil {
@@ -45,8 +55,13 @@ func getGameExecutablePath(dirName string) string {
 
 	for _, f := range installFiles {
 		name := f.Name()
-		if files.IsExecutable(name) {
-			return filepath.Join(dirName, name)
+		fullPath := filepath.Join(dirName, name)
+		info, err := f.Info()
+		if err != nil {
+			panic(fmt.Errorf("Error locating executable: %w", err))
+		}
+		if files.IsExecutable(info) {
+			return fullPath
 		}
 	}
 	err = fmt.Errorf("No executable found in dir \"%s\"", dirName)

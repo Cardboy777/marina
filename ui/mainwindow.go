@@ -3,13 +3,15 @@ package ui
 import (
 	"fmt"
 	"marina/constants"
-	"marina/db"
 	"marina/files"
 	"marina/launcher"
+	"marina/services"
 	"marina/stores"
 	"marina/types"
 	"marina/ui/widgets"
+	"sort"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -105,16 +107,52 @@ func selectGame(def *marina.Repository) {
 	selectedGameTitleLabel.SetText(def.Name)
 	updateRomText()
 
-	versions := getCurrentGameVersions()
-
-	if len(*versions) == 0 {
-		go syncReleases(false)
-	}
+	syncReleases(false)
 }
 
-func getCurrentGameVersions() *[]marina.Version {
+func getCurrentGameVersions() *[]widgets.ListItem {
+	var list []widgets.ListItem
+
 	versions := stores.GetVersions(selectedGame)
-	return versions
+
+	for _, v := range *versions {
+		list = append(list, widgets.ListItem{
+			IsStableRelease: true,
+			Release:         &v,
+		})
+	}
+
+	unstable := stores.GetUnstableVersions(selectedGame)
+
+	for _, v := range *unstable {
+		list = append(list, widgets.ListItem{
+			IsStableRelease: false,
+			UnstableRelease: &v,
+		})
+	}
+
+	sort.Slice(list, func(i, j int) bool {
+		l := list[i]
+		r := list[j]
+
+		var ldate time.Time
+		if l.IsStableRelease {
+			ldate = l.Release.ReleaseDate
+		} else {
+			ldate = l.UnstableRelease.ReleaseDate
+		}
+
+		var rdate time.Time
+		if r.IsStableRelease {
+			rdate = r.Release.ReleaseDate
+		} else {
+			rdate = r.UnstableRelease.ReleaseDate
+		}
+
+		return ldate.After(rdate)
+	})
+
+	return &list
 }
 
 func updateRomText() {
@@ -138,7 +176,7 @@ var versionList = widget.NewList(
 		return len(*getCurrentGameVersions())
 	},
 	func() fyne.CanvasObject {
-		return widgets.NewVersionListItemWidget(nil, downloadVersion, playVersion, deleteVersion)
+		return widgets.NewVersionListItemWidget(nil, downloadVersion, playVersion, deleteVersion, openFolder)
 	},
 	func(i widget.ListItemID, o fyne.CanvasObject) {
 		vDef := (*getCurrentGameVersions())[i]
@@ -147,21 +185,40 @@ var versionList = widget.NewList(
 		item.Update(&vDef)
 	})
 
-func playVersion(version *marina.Version, onClose func()) {
-	files.CopyRomsToVersionInstall(version)
-	err := launcher.LaunchGame(version, func(e error) {
-		if e != nil {
-			ShowErrorDialog(e)
-		}
-		onClose()
-	})
+func playVersion(item *widgets.ListItem, onClose func()) {
+	var err error
+	if item.IsStableRelease {
+		files.CopyRomsToVersionInstall(item.Release)
+		err = launcher.LaunchGame(item.Release, func(e error) {
+			if e != nil {
+				ShowErrorDialog(e)
+			}
+			onClose()
+		})
+	} else {
+		files.CopyRomsToUnstableVersionInstall(item.UnstableRelease)
+		err = launcher.LaunchUnstableGame(item.UnstableRelease, func(e error) {
+			if e != nil {
+				ShowErrorDialog(e)
+			}
+			onClose()
+		})
+
+	}
+
 	if err != nil {
 		ShowErrorDialog(err)
 	}
 }
 
-func downloadVersion(version *marina.Version, update func()) {
-	err := files.DownloadVersion(version)
+func downloadVersion(item *widgets.ListItem, update func()) {
+	var err error
+	if item.IsStableRelease {
+		err = files.DownloadVersion(item.Release)
+	} else {
+		err = files.DownloadUnstableVersion(item.UnstableRelease)
+	}
+
 	if err != nil {
 		ShowErrorDialog(err)
 		return
@@ -169,24 +226,49 @@ func downloadVersion(version *marina.Version, update func()) {
 	update()
 }
 
-func deleteVersion(version *marina.Version, update func()) {
-	ShowConfirmDialog("Delete", fmt.Sprintf("Delete %s?", version.Name), func(shouldDelete bool) {
+func openFolder(item *widgets.ListItem) {
+	var dir string
+	if item.IsStableRelease {
+		dir = files.GetVersionInstallDirPath(item.Release)
+	} else {
+		dir = files.GetUnstableVersionInstallDirPath(item.UnstableRelease)
+	}
+	OpenDirectory(dir)
+}
+
+const deletetionWarning string = "Saves, configurations, and mods will be permanently deleted!"
+
+func deleteVersion(item *widgets.ListItem, update func()) {
+	var name string
+
+	if item.IsStableRelease {
+		name = item.Release.Name
+	} else {
+		name = fmt.Sprintf("Unstable Version - %s", item.UnstableRelease.ReleaseDate.Format(time.DateTime))
+	}
+
+	ShowConfirmDialog("Delete", fmt.Sprintf("Delete %s?\n\n%s", name, deletetionWarning), func(shouldDelete bool) {
 		if !shouldDelete {
 			return
 		}
-		err := files.DeleteVersion(version)
+		var err error
+		if item.IsStableRelease {
+			err = files.DeleteVersion(item.Release)
+		} else {
+			err = files.DeleteUnstableVersion(item.UnstableRelease)
+		}
+
 		if err != nil {
 			ShowErrorDialog(err)
 			return
 		}
-		version.Installed = false
-		db.SetInstalled(version, false)
+
 		update()
 	})
 }
 
 func syncReleases(force bool) {
-	err := files.SyncReleases(selectedGame, force)
+	err := services.SyncReleases(selectedGame, force)
 	if err != nil {
 		ShowErrorDialog(err)
 	}

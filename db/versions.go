@@ -27,7 +27,6 @@ func GetVersionList(repo *marina.Repository) []marina.Version {
 	if err != nil {
 		panic(fmt.Errorf("Error reading releases from manifest: %w", err))
 	}
-	defer rows.Close()
 
 	versions := []marina.Version{}
 
@@ -58,6 +57,8 @@ func GetVersionList(repo *marina.Repository) []marina.Version {
 	sort.Slice(versions, func(i, j int) bool {
 		return versions[i].ReleaseDate.After(versions[j].ReleaseDate)
 	})
+
+	rows.Close()
 
 	return versions
 }

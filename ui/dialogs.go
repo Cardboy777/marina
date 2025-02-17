@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 
+	"github.com/skratchdot/open-golang/open"
 	"github.com/sqweek/dialog"
 )
 
@@ -22,4 +23,8 @@ func ShowFilePickerDialogFiltered(title string, fileTypesDescription string, fil
 		callbackFn("", err)
 	}
 	callbackFn(file, nil)
+}
+
+func OpenDirectory(path string) {
+	_ = open.Start(path)
 }

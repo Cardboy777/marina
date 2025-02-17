@@ -10,16 +10,17 @@ const DbSchemaInit = `
 		MacDownloadUrl TEXT NOT NULL,
 		LinuxPerformanceDownloadUrl TEXT NOT NULL,
 		LinuxCompatabilityDownloadUrl TEXT NOT NULL,
-		ReleaseDate datetime2 NOT NULL,
-		Installed bit NOT NULL,
+		ReleaseDate DATETIME2 NOT NULL,
+		Installed BIT NOT NULL,
 		PRIMARY KEY (Owner, Repository, TagName)
 	);
 
-	CREATE TABLE IF NOT EXISTS InstalledUnstableVersions (
+	CREATE TABLE IF NOT EXISTS UnstableVersions (
 		CommitHash TEXTPRIMARY KEY,
 		Owner TEXT NOT NULL,
 		Repository TEXT NOT NULL,
-		ReleaseDate datetime2 NOT NULL
+		ReleaseDate DATETIME2 NOT NULL,
+		Installed BIT NOT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS InstalledRoms (
@@ -30,7 +31,7 @@ const DbSchemaInit = `
 	);
 
 	CREATE TABLE IF NOT EXISTS LastFetchedDate (
-		Timestamp datetime2 NOT NULL,
+		Timestamp DATETIME2 NOT NULL,
 		Owner TEXT NOT NULL,
 		Repository TEXT NOT NULL
 	);

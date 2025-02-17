@@ -18,7 +18,6 @@ func GetInstalledRomList(repo *marina.Repository) []marina.Rom {
 	if err != nil {
 		panic(fmt.Errorf("Error reading installed roms from manifest: %w", err))
 	}
-	defer rows.Close()
 
 	roms := []marina.Rom{}
 
@@ -33,6 +32,8 @@ func GetInstalledRomList(repo *marina.Repository) []marina.Rom {
 		}
 		roms = append(roms, r)
 	}
+
+	rows.Close()
 	return roms
 }
 

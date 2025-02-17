@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"marina/constants"
 	"marina/settings"
 	"marina/stores"
@@ -14,12 +13,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var dirName string
 
 func DirName(name string) string {
-	replacer := strings.NewReplacer(" ", "-", ".", "_", "(", "", ")", "")
+	replacer := strings.NewReplacer(" ", "-", ".", "_", "(", "", ")", "", ":", "-")
 	return replacer.Replace(strings.ToLower(name))
 }
 
@@ -48,6 +48,12 @@ func GetVersionInstallDirPath(version *marina.Version) string {
 	return filepath.Join(settings.GetInstallDirName(), "versions", DirName(version.Repository.Repository), DirName(version.TagName))
 }
 
+func GetUnstableVersionInstallDirPath(version *marina.UnstableVersion) string {
+	unstableTimeName := fmt.Sprintf("unstable-%s", version.ReleaseDate.Format(time.DateTime))
+
+	return filepath.Join(settings.GetInstallDirName(), "versions", DirName(version.Repository.Repository), DirName(unstableTimeName))
+}
+
 func IsValidRomInstalled(repo *marina.Repository) (bool, *[]marina.Rom) {
 	roms := stores.GetInstalledRomsList(repo)
 	return len(*roms) > 0, roms
@@ -71,15 +77,46 @@ func CopyRomsToVersionInstall(version *marina.Version) {
 	}
 }
 
+func CopyRomsToUnstableVersionInstall(version *marina.UnstableVersion) {
+	hasRoms, installedRoms := IsValidRomInstalled(version.Repository)
+
+	if !hasRoms {
+		return
+	}
+
+	dirName := GetUnstableVersionInstallDirPath(version)
+	for _, r := range *installedRoms {
+		romPath := getRomPath(r)
+		dest := filepath.Join(dirName, getRomFileName(r))
+		err := os.Link(romPath, dest)
+		if err != nil && !errors.Is(err, os.ErrExist) {
+			panic(fmt.Errorf("Error linking rom to install directory: %w", err))
+		}
+	}
+}
+
 func DeleteVersion(version *marina.Version) error {
 	path := GetVersionInstallDirPath(version)
 	err := os.RemoveAll(path)
 	if err != nil {
-		log.Printf("Cannot delete version: %s", err)
+		fmt.Printf("Cannot delete version: %s", err)
 	}
 
 	version.Installed = false
-	stores.SetVersionInstalled(version)
+	stores.SetVersionInstalled(version, false)
+
+	return err
+}
+
+func DeleteUnstableVersion(version *marina.UnstableVersion) error {
+	path := GetUnstableVersionInstallDirPath(version)
+	err := os.RemoveAll(path)
+	if err != nil {
+		fmt.Printf("Cannot delete version: %s", err)
+	}
+
+	version.Installed = false
+	stores.SetUnstableVersionInstalled(version, false)
 
 	return err
 }
@@ -96,38 +133,86 @@ func DownloadVersion(version *marina.Version) error {
 
 	err = os.MkdirAll(path, constants.FilePermission)
 	if err != nil {
-		log.Printf("Cannot create version directory: %s", err)
+		fmt.Printf("Cannot create version directory: %s", err)
 		return err
 	}
 
 	out, err := os.Create(zipPath)
 	if err != nil {
-		log.Printf("Error downloading file: %s\n", err)
+		fmt.Printf("Error downloading file: %s\n", err)
 		return err
 	}
 	defer out.Close()
 
 	resp, err := http.Get(downloadUrl)
 	if err != nil {
-		log.Printf("Error downloading file: %s\n", err)
+		fmt.Printf("Error downloading file: %s\n", err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
-		log.Printf("Error downloading file: %s\n", err)
+		fmt.Printf("Error downloading file: %s\n", err)
 		return err
 	}
 
 	err = Unzip(zipPath, path)
 	if err != nil {
-		log.Printf("Error unzipping version: %s\n", err)
+		fmt.Printf("Error unzipping version: %s\n", err)
 		return err
 	}
 
 	version.Installed = true
-	stores.SetVersionInstalled(version)
+	stores.SetVersionInstalled(version, true)
+
+	return nil
+}
+
+func DownloadUnstableVersion(version *marina.UnstableVersion) error {
+	path := GetUnstableVersionInstallDirPath(version)
+
+	zipPath := filepath.Join(path, "download.zip")
+
+	downloadUrl, err := version.GetDownloadUrl()
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(path, constants.FilePermission)
+	if err != nil {
+		fmt.Printf("Cannot create version directory: %s", err)
+		return err
+	}
+
+	out, err := os.Create(zipPath)
+	if err != nil {
+		fmt.Printf("Error downloading file: %s\n", err)
+		return err
+	}
+	defer out.Close()
+
+	resp, err := http.Get(downloadUrl)
+	if err != nil {
+		fmt.Printf("Error downloading file: %s\n", err)
+		return err
+	}
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		fmt.Printf("Error downloading file: %s\n", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	err = Unzip(zipPath, path)
+	if err != nil {
+		fmt.Printf("Error unzipping unstable version: %s\n", err)
+		return err
+	}
+
+	version.Installed = true
+	stores.SetUnstableVersionInstalled(version, true)
 
 	return nil
 }
@@ -155,17 +240,21 @@ func CopyRomToInstallDir(repo *marina.Repository, sourcePath string) error {
 	return nil
 }
 
-func GetInstalledRoms(repo *marina.Repository) *[]marina.Rom {
-	panic("get roms from db")
-}
+func IsExecutable(file os.FileInfo) bool {
+	if file.Mode().IsDir() {
+		return false
+	}
 
-func IsExecutable(fileName string) bool {
+	if file.Mode().Perm()&0100 != 0 {
+		return true
+	}
+
 	switch {
-	case runtime.GOOS == "linux" && strings.HasSuffix(fileName, ".appimage"):
+	case runtime.GOOS == "linux" && strings.HasSuffix(file.Name(), ".appimage"):
 		return true
-	case runtime.GOOS == "mac" && strings.HasSuffix(fileName, ".dmg"):
+	case runtime.GOOS == "mac" && strings.HasSuffix(file.Name(), ".dmg"):
 		return true
-	case runtime.GOOS == "windows" && strings.HasSuffix(fileName, ".exe"):
+	case runtime.GOOS == "windows" && strings.HasSuffix(file.Name(), ".exe"):
 		return true
 	}
 	return false

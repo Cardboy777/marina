@@ -1,12 +1,10 @@
-package files
+package services
 
 import (
 	"context"
 	"fmt"
-	"marina/stores"
 	"marina/types"
 	"strings"
-	"time"
 
 	"github.com/google/go-github/v68/github"
 )
@@ -102,33 +100,4 @@ func fetchLatestCommit(definition *marina.Repository) (*marina.UnstableVersion, 
 
 func isValidAssetType(name string) bool {
 	return name == "application/zip" || name == "application/x-zip-compressed"
-}
-
-func SyncReleases(repository *marina.Repository, force bool) error {
-	if !force {
-		timeLastFetched := stores.GetLastFetched(repository)
-		timeCutoff := time.Now().Add(time.Duration(-1) * time.Hour)
-		if timeLastFetched != nil && timeLastFetched.After(timeCutoff) {
-			return nil
-		}
-	}
-
-	versions, err := fetchReleaseVersions(repository)
-	if err != nil {
-		return err
-	}
-	for _, v := range versions {
-		stores.AddVersion(&v)
-	}
-
-	latestCommit, err := fetchLatestCommit(repository)
-	if err != nil {
-		return err
-	}
-
-	stores.AddUnstableVersion(latestCommit, false)
-
-	stores.UpdateLastFetched(repository, time.Now())
-
-	return nil
 }

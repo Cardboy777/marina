@@ -76,8 +76,8 @@ var (
 		Repository: "Starship",
 		LatestBuildUrls: marina.DownloadUrls{
 			Windows: "https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-windows.zip",
-			Linux:   "https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-mac-x64.zip",
-			Mac:     "https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-linux.zip",
+			Linux:   "https://nightly.link/HarbourMasters/Starship/workflows/main/main/Starship-linux.zip",
+			Mac:     "https://nightly.link/HarbourMasters/Starship/workflows/main/main/starship-mac-x64.zip",
 		},
 		AcceptedRomHashes: &[]marina.Rom{
 			{

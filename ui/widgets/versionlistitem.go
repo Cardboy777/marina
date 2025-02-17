@@ -15,44 +15,38 @@ import (
 type VersionListItemWidget struct {
 	widget.BaseWidget
 	content          *fyne.Container
-	primaryButton    *widget.Button
+	playButton       *widget.Button
+	downloadButton   *widget.Button
 	deleteButton     *widget.Button
+	openDirButton    *widget.Button
 	name             *widget.Label
 	compatability    *widget.Label
 	releaseDate      *widget.Label
-	latestTag        *widget.Label
-	version          *marina.Version
-	deleteCallback   func(*marina.Version, func())
-	downloadCallback func(*marina.Version, func())
-	playCallback     func(*marina.Version, func())
-	isPlaying        bool
+	listItem         *ListItem
+	deleteCallback   func(*ListItem, func())
+	downloadCallback func(*ListItem, func())
+	playCallback     func(*ListItem, func())
+	openDirCallback  func(*ListItem)
 }
 
-func NewVersionListItemWidget(version *marina.Version, downloadCallback func(*marina.Version, func()), playCallback func(*marina.Version, func()), deleteCallback func(*marina.Version, func())) *VersionListItemWidget {
+func NewVersionListItemWidget(version *ListItem, downloadCallback func(*ListItem, func()), playCallback func(*ListItem, func()), deleteCallback func(*ListItem, func()), openDirCallback func(*ListItem)) *VersionListItemWidget {
 	var item *VersionListItemWidget
 	item = &VersionListItemWidget{
-		primaryButton:    widget.NewButtonWithIcon("Download", theme.DownloadIcon(), func() { item.primaryAction() }),
+		playButton:       widget.NewButtonWithIcon("Play", theme.MediaPlayIcon(), func() { item.playAction() }),
+		downloadButton:   widget.NewButtonWithIcon("Download", theme.DownloadIcon(), func() { item.downloadAction() }),
 		deleteButton:     widget.NewButtonWithIcon("Delete", theme.DeleteIcon(), func() { item.deleteAction() }),
+		openDirButton:    widget.NewButtonWithIcon("", theme.FolderIcon(), func() { item.openDirAction() }),
 		name:             widget.NewLabel(""),
-		compatability:    widget.NewLabel("OS not supported"),
+		compatability:    widget.NewLabel("OS-compatible version not found"),
 		releaseDate:      widget.NewLabel(""),
-		latestTag:        widget.NewLabel("- Latest -"),
-		version:          version,
+		listItem:         version,
 		deleteCallback:   deleteCallback,
 		downloadCallback: downloadCallback,
 		playCallback:     playCallback,
+		openDirCallback:  openDirCallback,
 	}
 
 	leftContainer := container.NewStack(
-		container.NewVBox(
-			container.NewHBox(
-				container.NewStack(
-					// canvas.NewRectangle(marina.NewColor(0, 0, 0xffff, 0xffff)),
-					item.latestTag,
-				),
-				layout.NewSpacer(),
-			),
-		),
 		container.NewVBox(
 			layout.NewSpacer(),
 			container.NewHBox(
@@ -67,14 +61,13 @@ func NewVersionListItemWidget(version *marina.Version, downloadCallback func(*ma
 	rightContainer := container.NewVBox(
 		layout.NewSpacer(),
 		container.NewHBox(
+			item.openDirButton,
 			item.deleteButton,
-			item.primaryButton,
+			item.playButton,
+			item.downloadButton,
 		),
 		layout.NewSpacer(),
 	)
-
-	item.latestTag.Theme()
-	item.latestTag.Hide()
 
 	item.Update(version)
 
@@ -91,42 +84,56 @@ func NewVersionListItemWidget(version *marina.Version, downloadCallback func(*ma
 	return item
 }
 
-func (item *VersionListItemWidget) primaryAction() {
-	if item == nil || item.version == nil {
+func (item *VersionListItemWidget) playAction() {
+	if item == nil || item.listItem == nil {
+		return
+	}
+	item.playCallback(item.listItem, func() {})
+}
+
+func (item *VersionListItemWidget) downloadAction() {
+	if item == nil || item.listItem == nil {
 		return
 	}
 
-	item.setButtonsEnabled(false)
-	if item.version.Installed {
-		item.isPlaying = true
-		item.playCallback(item.version, func() {
-			item.isPlaying = false
-			item.setButtonsEnabled(true)
-		})
-	} else {
-		item.downloadCallback(item.version, func() {
-			item.Update(item.version)
-			item.setButtonsEnabled(true)
-		})
-	}
+	item.downloadCallback(item.listItem, func() {
+		item.Update(item.listItem)
+	})
 }
 
 func (item *VersionListItemWidget) deleteAction() {
-	if item == nil || item.version == nil {
+	if item == nil || item.listItem == nil {
 		return
 	}
 
-	item.setButtonsEnabled(false)
-	item.deleteCallback(item.version, func() { item.Update(item.version) })
-	item.setButtonsEnabled(true)
+	item.deleteCallback(item.listItem, func() { item.Update(item.listItem) })
 }
 
-func (item *VersionListItemWidget) Update(version *marina.Version) {
-	item.version = version
-	if item.version == nil {
+func (item *VersionListItemWidget) openDirAction() {
+	if item == nil || item.listItem == nil {
 		return
 	}
 
+	item.openDirCallback(item.listItem)
+}
+
+func (item *VersionListItemWidget) Update(listItem *ListItem) {
+	item.listItem = listItem
+
+	if item.listItem == nil {
+		return
+	} else if item.listItem.IsStableRelease && item.listItem.Release != nil {
+		item.UpdateVersion(item.listItem.Release)
+	} else if !item.listItem.IsStableRelease && item.listItem.UnstableRelease != nil {
+		item.UpdateUnstableVersion(item.listItem.UnstableRelease)
+	}
+}
+
+func (item *VersionListItemWidget) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(item.content)
+}
+
+func (item *VersionListItemWidget) UpdateVersion(version *marina.Version) {
 	item.releaseDate.SetText(fmt.Sprintf("Release: %s", version.ReleaseDate.Local().Format(time.DateOnly)))
 
 	isOSCompatible := version.IsOSCompatible()
@@ -138,46 +145,48 @@ func (item *VersionListItemWidget) Update(version *marina.Version) {
 
 	item.name.SetText(version.Name)
 
-	if item.version.Installed {
-		item.primaryButton.SetText("Play")
-		item.primaryButton.SetIcon(theme.MediaPlayIcon())
+	if version.Installed {
+		item.downloadButton.Hide()
+		item.playButton.Show()
 		item.deleteButton.Show()
+		item.openDirButton.Show()
 	} else {
-		item.primaryButton.SetText("Download")
-		item.primaryButton.SetIcon(theme.DownloadIcon())
+		item.downloadButton.Show()
+		item.playButton.Hide()
 		item.deleteButton.Hide()
+		item.openDirButton.Hide()
 	}
 
-	if isOSCompatible && !item.isPlaying {
-		item.primaryButton.Enable()
+	if isOSCompatible {
+		item.downloadButton.Enable()
+		item.playButton.Enable()
 	} else {
-		item.primaryButton.Disable()
+		item.downloadButton.Disable()
+		item.playButton.Disable()
 	}
-	//
-	// latestVersion := stores.GetLatestVersion(item.version.Repository)
-	// latestDev := stores.GetLatestUnstableVersion(item.version.Repository)
-	//
-	// if latestVersion != nil && latestVersion.TagName == item.version.TagName {
-	// 	item.latestTag.SetText("Latest Release")
-	// 	item.latestTag.Show()
-	// } else if latestDev != nil && latestDev.Hash == item.version.TagName {
-	// 	item.latestTag.SetText("Latest Unstable Release")
-	// 	item.latestTag.Show()
-	// } else {
-	// 	item.latestTag.Hide()
-	// }
 }
 
-func (item *VersionListItemWidget) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(item.content)
-}
+func (item *VersionListItemWidget) UpdateUnstableVersion(version *marina.UnstableVersion) {
+	item.releaseDate.SetText(fmt.Sprintf("Release: %s", version.ReleaseDate.Local().Format(time.DateOnly)))
 
-func (item *VersionListItemWidget) setButtonsEnabled(enabled bool) {
-	if enabled {
-		item.primaryButton.Enable()
-		item.deleteButton.Enable()
+	item.compatability.Hide()
+
+	name := fmt.Sprintf("Unstable Version - Commit: %s", version.Hash)
+
+	item.name.SetText(name)
+
+	if version.Installed {
+		item.downloadButton.Hide()
+		item.playButton.Show()
+		item.deleteButton.Show()
+		item.openDirButton.Show()
 	} else {
-		item.primaryButton.Disable()
-		item.deleteButton.Disable()
+		item.downloadButton.Show()
+		item.playButton.Hide()
+		item.deleteButton.Hide()
+		item.openDirButton.Hide()
 	}
+
+	item.downloadButton.Enable()
+	item.playButton.Enable()
 }

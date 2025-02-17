@@ -41,17 +41,17 @@ func Unzip(src, dest string) error {
 		}
 
 		if f.FileInfo().IsDir() {
-			err := os.MkdirAll(path, f.Mode())
+			err := os.MkdirAll(path, constants.FilePermission)
 			if err != nil {
 				return err
 			}
 		} else {
-			err := os.MkdirAll(filepath.Dir(path), f.Mode())
+			err := os.MkdirAll(filepath.Dir(path), constants.FilePermission)
 			if err != nil {
 				return err
 			}
 
-			isExe := IsExecutable(f.Name)
+			isExe := IsExecutable(f.FileInfo())
 			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 
 			if err == nil && isExe {

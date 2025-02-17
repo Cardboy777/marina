@@ -17,7 +17,7 @@ var db *sql.DB
 func Init() {
 	installDir := settings.GetInstallDirName()
 
-	dbFilePath := filepath.Join(installDir, dbFileName)
+	dbFilePath := fmt.Sprintf("%s?_busy_timeout=5000", filepath.Join(installDir, dbFileName))
 	database, err := sql.Open("sqlite", dbFilePath)
 	if err != nil {
 		panic(fmt.Errorf("Error opening manifest db: %w", err))

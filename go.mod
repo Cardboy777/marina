@@ -1,13 +1,15 @@
 module marina
 
-go 1.23.5
+go 1.24.0
 
 require (
-	fyne.io/fyne/v2 v2.5.3
+	fyne.io/fyne/v2 v2.5.4
+	github.com/adrg/xdg v0.5.3
 	github.com/google/go-github/v68 v68.0.0
+	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/viper v1.19.0
 	github.com/sqweek/dialog v0.0.0-20240226140203-065105509627
-	modernc.org/sqlite v1.34.5
+	modernc.org/sqlite v1.35.0
 )
 
 require (
@@ -36,6 +38,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.4.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -58,11 +61,11 @@ require (
 	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/mobile v0.0.0-20231127183840-76ac6878050a // indirect
 	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.55.3 // indirect
-	modernc.org/mathutil v1.6.0 // indirect
-	modernc.org/memory v1.8.0 // indirect
+	modernc.org/libc v1.61.13 // indirect
+	modernc.org/mathutil v1.7.1 // indirect
+	modernc.org/memory v1.8.2 // indirect
 )
