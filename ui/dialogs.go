@@ -11,18 +11,29 @@ func ShowErrorDialog(err error) {
 	dialog.Message("%s", err).Title("Encounterd an Error").Error()
 }
 
-func ShowConfirmDialog(title string, message string, callbackFn func(bool)) {
+func ShowConfirmDialog(title string, message string) bool {
 	ok := dialog.Message("%s", message).Title(title).YesNo()
-	callbackFn(ok)
+	return ok
 }
 
-func ShowFilePickerDialogFiltered(title string, fileTypesDescription string, filetypes []string, callbackFn func(string, error)) {
+func ShowFilePickerDialogFiltered(title string, fileTypesDescription string, filetypes []string) (string, error) {
 	file, err := dialog.File().Filter(fileTypesDescription, filetypes...).Title(title).Load()
 
 	if err != nil && !errors.Is(err, dialog.ErrCancelled) {
-		callbackFn("", err)
+		return "", err
 	}
-	callbackFn(file, nil)
+
+	return file, nil
+}
+
+func ShowDirectoryPickerDialog(title string) (string, error) {
+	folder, err := dialog.Directory().Title(title).Browse()
+
+	if err != nil && !errors.Is(err, dialog.ErrCancelled) {
+		return "", err
+	}
+
+	return folder, nil
 }
 
 func OpenDirectory(path string) {

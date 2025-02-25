@@ -59,10 +59,13 @@ func createConfigDirIfNotExist(path string) {
 }
 
 func GetDefaultInstallDir() string {
-	return xdg.DataHome
+	return filepath.Join(xdg.DataHome, strings.ToLower(constants.AppName))
 }
 
 func SetInstallDir(dir string) {
+	if len(dir) == 0 {
+		dir = GetDefaultInstallDir()
+	}
 	config.Set("InstallDir", dir)
 
 	saveChanges()
@@ -76,5 +79,5 @@ func saveChanges() {
 }
 
 func GetInstallDirName() string {
-	return filepath.Join(config.GetString("InstallDir"), strings.ToLower(constants.AppName))
+	return filepath.Join(config.GetString("InstallDir"))
 }

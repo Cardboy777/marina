@@ -64,12 +64,16 @@ func initWindow(window fyne.Window) {
 			widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {
 				go syncReleases(true)
 			}),
+			widget.NewToolbarAction(theme.SettingsIcon(), func() {
+				go showSettingsDialog(window)
+			}),
 		),
 		container.NewCenter(widget.NewLabel(constants.AppName)),
 	)
 
 	addRomsButton := widget.NewButton("Add ROMs", func() {
-		ShowFilePickerDialogFiltered("Choose ROM", "Nintendo 64 ROMs", []string{"z64"}, onFilesSelected)
+		file, err := ShowFilePickerDialogFiltered("Choose ROM", "Nintendo 64 ROMs", []string{"z64"})
+		onFilesSelected(file, err)
 	})
 	romBox := container.NewVBox(installedRomsLabel, addRomsButton)
 
@@ -247,24 +251,23 @@ func deleteVersion(item *widgets.ListItem, update func()) {
 		name = fmt.Sprintf("Unstable Version - %s", item.UnstableRelease.ReleaseDate.Format(time.DateTime))
 	}
 
-	ShowConfirmDialog("Delete", fmt.Sprintf("Delete %s?\n\n%s", name, deletetionWarning), func(shouldDelete bool) {
-		if !shouldDelete {
-			return
-		}
-		var err error
-		if item.IsStableRelease {
-			err = files.DeleteVersion(item.Release)
-		} else {
-			err = files.DeleteUnstableVersion(item.UnstableRelease)
-		}
+	shouldDelete := ShowConfirmDialog("Delete", fmt.Sprintf("Delete %s?\n\n%s", name, deletetionWarning))
+	if !shouldDelete {
+		return
+	}
+	var err error
+	if item.IsStableRelease {
+		err = files.DeleteVersion(item.Release)
+	} else {
+		err = files.DeleteUnstableVersion(item.UnstableRelease)
+	}
 
-		if err != nil {
-			ShowErrorDialog(err)
-			return
-		}
+	if err != nil {
+		ShowErrorDialog(err)
+		return
+	}
 
-		update()
-	})
+	update()
 }
 
 func syncReleases(force bool) {
