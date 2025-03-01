@@ -245,10 +245,6 @@ func IsExecutable(file os.FileInfo) bool {
 		return false
 	}
 
-	if file.Mode().Perm()&0100 != 0 {
-		return true
-	}
-
 	switch {
 	case runtime.GOOS == "linux" && strings.HasSuffix(file.Name(), ".appimage"):
 		return true
@@ -257,5 +253,6 @@ func IsExecutable(file os.FileInfo) bool {
 	case runtime.GOOS == "windows" && strings.HasSuffix(file.Name(), ".exe"):
 		return true
 	}
+
 	return false
 }
