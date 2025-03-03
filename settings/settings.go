@@ -17,12 +17,18 @@ var config = viper.New()
 var restart = false
 
 func Init() {
+	printVersion := pflag.BoolP("version", "v", false, "Print Marina version.")
 	showHelp := pflag.BoolP("help", "h", false, "Display help text.")
 	configDir := pflag.StringP("config-dir", "c", getDefaultConfigDir(), "Directory that contains \"config.toml\".")
 	pflag.Parse()
 
 	if *showHelp {
 		pflag.PrintDefaults()
+		os.Exit(0)
+	}
+
+	if *printVersion {
+		fmt.Println(constants.AppVersion)
 		os.Exit(0)
 	}
 
