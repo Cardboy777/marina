@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/adrg/xdg"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -15,18 +16,17 @@ var config = viper.New()
 
 var restart = false
 
-func Init() {
-	systemConfigPath, err := os.UserConfigDir()
-	if err != nil {
-		panic(fmt.Errorf("System Config Directory does not exist: %w", err))
-	}
+var configDir *string
 
-	configPath := fmt.Sprintf("%s/%s", systemConfigPath, strings.ToLower(constants.AppName))
-	createConfigDirIfNotExist(configPath)
+func Init() {
+	configDir = pflag.StringP("config-dir", "c", getDefaultConfigDir(), "Directory that contains \"config.toml\"")
+	pflag.Parse()
+
+	createConfigDirIfNotExist(*configDir)
 
 	config.SetConfigName("config")
 	config.SetConfigType("toml")
-	config.AddConfigPath(configPath)
+	config.AddConfigPath(*configDir)
 
 	setDefaults()
 
@@ -42,6 +42,14 @@ func Init() {
 			panic(fmt.Errorf("Error reading config file: %w", err))
 		}
 	}
+}
+
+func getDefaultConfigDir() string {
+	path, err := os.UserConfigDir()
+	if err != nil {
+		panic(fmt.Errorf("System Config Directory does not exist: %w", err))
+	}
+	return filepath.Join(path, strings.ToLower(constants.AppName))
 }
 
 func setDefaults() {
