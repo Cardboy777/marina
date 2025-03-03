@@ -59,11 +59,11 @@ func IsValidRomInstalled(repo *marina.Repository) (bool, *[]marina.Rom) {
 	return len(*roms) > 0, roms
 }
 
-func CopyRomsToVersionInstall(version *marina.Version) {
+func CopyRomsToVersionInstall(version *marina.Version) error {
 	hasRoms, installedRoms := IsValidRomInstalled(version.Repository)
 
 	if !hasRoms {
-		return
+		return fmt.Errorf("No valid ROMs are installed")
 	}
 
 	dirName := GetVersionInstallDirPath(version)
@@ -72,16 +72,18 @@ func CopyRomsToVersionInstall(version *marina.Version) {
 		dest := filepath.Join(dirName, getRomFileName(r))
 		err := os.Link(romPath, dest)
 		if err != nil && !errors.Is(err, os.ErrExist) {
-			panic(fmt.Errorf("Error linking rom to install directory: %w", err))
+			return (fmt.Errorf("Error linking rom to install directory: %w", err))
 		}
 	}
+
+	return nil
 }
 
-func CopyRomsToUnstableVersionInstall(version *marina.UnstableVersion) {
+func CopyRomsToUnstableVersionInstall(version *marina.UnstableVersion) error {
 	hasRoms, installedRoms := IsValidRomInstalled(version.Repository)
 
 	if !hasRoms {
-		return
+		return fmt.Errorf("No valid ROMs are installed")
 	}
 
 	dirName := GetUnstableVersionInstallDirPath(version)
@@ -90,9 +92,11 @@ func CopyRomsToUnstableVersionInstall(version *marina.UnstableVersion) {
 		dest := filepath.Join(dirName, getRomFileName(r))
 		err := os.Link(romPath, dest)
 		if err != nil && !errors.Is(err, os.ErrExist) {
-			panic(fmt.Errorf("Error linking rom to install directory: %w", err))
+			return (fmt.Errorf("Error linking rom to install directory: %w", err))
 		}
 	}
+
+	return nil
 }
 
 func DeleteVersion(version *marina.Version) error {

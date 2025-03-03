@@ -14,7 +14,7 @@ const dbFileName = "manifest.db"
 
 var db *sql.DB
 
-func Init() {
+func openDbConnection() {
 	installDir := settings.GetInstallDirName()
 
 	dbFilePath := fmt.Sprintf("%s?_busy_timeout=5000", filepath.Join(installDir, dbFileName))
@@ -28,4 +28,20 @@ func Init() {
 	if err != nil {
 		panic(fmt.Errorf("Error initializing manifest db: %w", err))
 	}
+}
+
+func closeDbConnection() {
+	err := db.Close()
+	if err != nil {
+		panic(fmt.Errorf("Error closing manifest db: %w", err))
+	}
+}
+
+func Init() {
+	openDbConnection()
+}
+
+func ResetDbConnection() {
+	closeDbConnection()
+	openDbConnection()
 }

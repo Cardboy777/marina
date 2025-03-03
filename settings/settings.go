@@ -13,6 +13,8 @@ import (
 
 var config = viper.New()
 
+var restart = false
+
 func Init() {
 	systemConfigPath, err := os.UserConfigDir()
 	if err != nil {
@@ -66,9 +68,11 @@ func SetInstallDir(dir string) {
 	if len(dir) == 0 {
 		dir = GetDefaultInstallDir()
 	}
-	config.Set("InstallDir", dir)
-
-	saveChanges()
+	if dir != GetInstallDirName() {
+		config.Set("InstallDir", dir)
+		saveChanges()
+		restart = true
+	}
 }
 
 func saveChanges() {
@@ -80,4 +84,12 @@ func saveChanges() {
 
 func GetInstallDirName() string {
 	return filepath.Join(config.GetString("InstallDir"))
+}
+
+func ShouldRestart() bool {
+	if restart {
+		restart = false
+		return true
+	}
+	return false
 }

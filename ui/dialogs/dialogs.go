@@ -1,4 +1,4 @@
-package ui
+package dialogs
 
 import (
 	"errors"
@@ -6,6 +6,12 @@ import (
 	"github.com/skratchdot/open-golang/open"
 	"github.com/sqweek/dialog"
 )
+
+func ShowDialogIfError(err error) {
+	if err != nil {
+		ShowErrorDialog(err)
+	}
+}
 
 func ShowErrorDialog(err error) {
 	dialog.Message("%s", err).Title("Encounterd an Error").Error()

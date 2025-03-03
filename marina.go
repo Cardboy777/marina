@@ -11,5 +11,11 @@ func main() {
 	settings.Init()
 	files.Init()
 	db.Init()
-	ui.Init()
+	for {
+		ui.Start()
+		if !settings.ShouldRestart() {
+			break
+		}
+		db.ResetDbConnection()
+	}
 }

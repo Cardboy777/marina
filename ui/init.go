@@ -1,4 +1,0 @@
-package ui
-
-func Init() {
-}

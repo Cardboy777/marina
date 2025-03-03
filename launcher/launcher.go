@@ -10,11 +10,21 @@ import (
 )
 
 func LaunchGame(version *marina.Version, onClose func(error)) error {
+	err := files.CopyRomsToVersionInstall(version)
+	if err != nil {
+		return err
+	}
+
 	path := files.GetVersionInstallDirPath(version)
 	return launch(path, onClose)
 }
 
 func LaunchUnstableGame(version *marina.UnstableVersion, onClose func(error)) error {
+	err := files.CopyRomsToUnstableVersionInstall(version)
+	if err != nil {
+		return err
+	}
+
 	path := files.GetUnstableVersionInstallDirPath(version)
 	return launch(path, onClose)
 }
