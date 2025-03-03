@@ -8,7 +8,7 @@ import (
 )
 
 func Start() {
-	wnd := g.NewMasterWindow(constants.AppName, 1000, 600, 0)
+	wnd := g.NewMasterWindow(constants.AppName, 800, 600, 0)
 
 	go mainwindow.RefreshVersions(false)
 

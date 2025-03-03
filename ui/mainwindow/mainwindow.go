@@ -9,7 +9,7 @@ import (
 
 var SelectedGame *marina.Repository = &constants.SohDefinition
 
-var mainSplit float32 = 150
+var mainSplit float32 = 200
 
 func Loop() {
 	g.SingleWindow().Layout(
