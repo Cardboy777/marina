@@ -25,6 +25,7 @@ jobs:
 
       - name: Prepare Package Directory
         run: |
+          mkdir -p build/linux/AppDir/usr/bin
           mkdir -p build/linux/AppDir/usr/share/pixmaps
           cp build/assets/* build/linux/AppDir/usr/share/pixmaps
 
