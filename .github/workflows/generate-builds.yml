@@ -2,9 +2,9 @@ name: generate-builds
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [$default-branch]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [$default-branch]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,27 +14,36 @@ jobs:
   build-linux:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
+      - name: Set up Go
+        uses: actions/setup-go@v5
 
-    - name: Install container dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc libgl1-mesa-dev xorg-dev libfuse2
+      - name: Install container dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev
 
-    - name: Install Fyne tool
-      run: go install fyne.io/fyne/v2/cmd/fyne@latest
+      - name: Prepare Package Directory
+        run: >
+          mkdir -p build/usr/share/pixmaps
+          cp build/assets/* build/linux/usr/share/pixmaps
 
-    - name: Package Fyne app
-      run: fyne package --os linux --release
+      - name: Build
+        run: go build -ldflags="-X 'marina/constants.AppVersion=${{ github.runId }}' -o build/linux/AppDir/usr/bin/marina"
 
-    - name: Upload build
-      uses: actions/upload-artifact@v4
-      with:
-        name: marina-linux
-        path: marina.appimage
+      - name: Package Appimage
+        uses: AppImageCrafters/build-appimage@master
+        with:
+          recipe: "./build/linux/AppImageBuilder.yml"
+        # env:
+        #   UPDATE_INFO: gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|*x86_64.AppImage.zsync
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: marina-linux
+          path: marina.appimage
 
   build-windows:
     runs-on: windows-latest
@@ -42,55 +51,49 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - uses: msys2/setup-msys2@v2
-      with:
-        path-type: inherit
-        update: true
+      - uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          update: true
 
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
+      - name: Set up Go
+        uses: actions/setup-go@v5
 
-    - name: Install container dependencies
-      run: >
-        pacman -Syu &&
-        pacman --noconfirm -S git zip mingw-w64-x86_64-toolchain
+      - name: Install container dependencies
+        run: >
+          pacman -Syu &&
+          pacman --noconfirm -S git zip mingw-w64-x86_64-toolchain
 
-    - name: Install Fyne tool
-      run: go install fyne.io/fyne/v2/cmd/fyne@latest
+      - name: Build
+        run: go build -ldflags="-s -w -H=windowsgui -extldflags=-static -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina"
 
-    - name: Package
-      run: fyne package --os windows --release
-
-    - name: Upload build
-      uses: actions/upload-artifact@v4
-      with:
-        name: marina-windows
-        path: marina
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: marina-windows
+          path: marina
 
   build-mac:
     runs-on: macos-14
     needs: test
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest-stable
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
 
-    - name: Install Fyne tool
-      run: go install fyne.io/fyne/v2/cmd/fyne@latest
+      - name: Build
+        run: go build -ldflags="-s -w -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina.dmg"
 
-    - name: Package
-      run: fyne package --os darwin --release
-
-    - name: Upload build
-      uses: actions/upload-artifact@v4
-      with:
-        name: marina-mac
-        path: marina.dmg
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: marina-mac
+          path: marina.dmg

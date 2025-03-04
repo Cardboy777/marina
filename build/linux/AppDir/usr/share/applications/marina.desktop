@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Marina
+Exec=/usr/bin/marina
+Terminal=false
+Hidden=false
+Icon=marina
+Categories=Game; Utility
+Comment=Unofficial launcher for Harbour Masters' projects.

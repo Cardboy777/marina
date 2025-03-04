@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <pattern
+       xlink:href="#invert grid"
+       preserveAspectRatio="none"
+       id="pattern31"
+       patternTransform="scale(5.2,100)"
+       x="0"
+       y="-5" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="12"
+       height="12"
+       preserveAspectRatio="xMidYMid"
+       id="invert grid"
+       x="0"
+       y="0"
+       style="fill:#503818">
+      <rect
+         style="stroke:none;paint-order:markers fill stroke"
+         id="rect2-0"
+         width="10"
+         height="10"
+         x="0"
+         y="0" />
+    </pattern>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath32">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g31"
+         id="use32" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath34">
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g33"
+         id="use34" />
+    </clipPath>
+  </defs>
+  <g
+     id="iconportrait"
+     clip-path="url(#clipPath34)"
+     transform="translate(-30.019544,-1.6677524)">
+    <g
+       id="g33"
+       style="fill:#0088aa">
+      <rect
+         style="fill:#0088aa;stroke-width:1.82881"
+         id="rect3"
+         width="512"
+         height="512"
+         x="30.019545"
+         y="1.6677524"
+         rx="100"
+         ry="100" />
+    </g>
+    <g
+       id="layer2">
+      <rect
+         style="fill:#2b1100;stroke-width:1.375"
+         id="rect2-2-7"
+         width="35.37133"
+         height="534.99133"
+         x="82.107864"
+         y="32.487461"
+         rx="25.038525" />
+      <rect
+         style="fill:#2b1100;stroke-width:1.375"
+         id="rect2-2-7-7"
+         width="35.37133"
+         height="534.99133"
+         x="264.07166"
+         y="93.674271"
+         rx="25.038525" />
+      <rect
+         style="fill:#2b1100;stroke-width:1.16726"
+         id="rect2-2"
+         width="35.37133"
+         height="385.54749"
+         x="465.65253"
+         y="164.94571"
+         rx="25.038525" />
+    </g>
+    <g
+       id="layer1">
+      <rect
+         style="fill:#28170b;fill-opacity:1;stroke-width:1.14852"
+         id="rect1-2-2"
+         width="731.76495"
+         height="254.36276"
+         x="-657.90051"
+         y="-385.34177"
+         rx="25.038525"
+         transform="matrix(-0.95116809,-0.30867339,0.88297094,-0.46942764,0,0)" />
+      <rect
+         style="fill:#5b3e2a;fill-opacity:1;stroke-width:1.14852"
+         id="rect1-2"
+         width="731.76495"
+         height="254.36276"
+         x="-622.32568"
+         y="-342.84116"
+         rx="25.038525"
+         transform="matrix(-0.95116809,-0.30867339,0.88297094,-0.46942764,0,0)" />
+      <rect
+         style="fill:url(#pattern31);fill-opacity:1;stroke-width:1.14852"
+         id="rect1"
+         width="731.76495"
+         height="254.36276"
+         x="-622.32556"
+         y="-342.84113"
+         rx="25.038525"
+         transform="matrix(-0.95116809,-0.30867339,0.88297094,-0.46942764,0,0)" />
+      <g
+         id="g32"
+         clip-path="url(#clipPath32)">
+        <g
+           id="g31">
+          <rect
+             style="fill:#2b1100;stroke-width:1.10538"
+             id="rect2"
+             width="35.37133"
+             height="345.75476"
+             x="81.79332"
+             y="233.95917"
+             rx="25.038525" />
+        </g>
+      </g>
+      <rect
+         style="fill:#2b1100"
+         id="rect2-5"
+         width="35.37133"
+         height="282.97064"
+         x="263.10364"
+         y="287.52676"
+         rx="25.038525" />
+    </g>
+  </g>
+</svg>
