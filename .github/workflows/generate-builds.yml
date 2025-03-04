@@ -1,0 +1,99 @@
+name: generate-builds
+
+on:
+  push:
+    branches: [$default-branch]
+  pull_request:
+    branches: [$default-branch]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+
+      - name: Install container dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev
+
+      - name: Prepare Package Directory
+        run: >
+          mkdir -p build/usr/share/pixmaps
+          cp build/assets/* build/linux/usr/share/pixmaps
+
+      - name: Build
+        run: go build -ldflags="-X 'marina/constants.AppVersion=${{ github.runId }}' -o build/linux/AppDir/usr/bin/marina"
+
+      - name: Package Appimage
+        uses: AppImageCrafters/build-appimage@master
+        with:
+          recipe: "./build/linux/AppImageBuilder.yml"
+        # env:
+        #   UPDATE_INFO: gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|*x86_64.AppImage.zsync
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: marina-linux
+          path: marina.appimage
+
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          update: true
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+
+      - name: Install container dependencies
+        run: >
+          pacman -Syu &&
+          pacman --noconfirm -S git zip mingw-w64-x86_64-toolchain
+
+      - name: Build
+        run: go build -ldflags="-s -w -H=windowsgui -extldflags=-static -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina"
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: marina-windows
+          path: marina
+
+  build-mac:
+    runs-on: macos-14
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+
+      - name: Build
+        run: go build -ldflags="-s -w -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina.dmg"
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: marina-mac
+          path: marina.dmg
