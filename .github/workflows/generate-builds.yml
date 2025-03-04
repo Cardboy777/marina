@@ -20,11 +20,11 @@ jobs:
 
       - name: Install container dependencies
         run: |
-          sudo apt-get update
+          sudo apt-get update &&
           sudo apt-get install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev
 
       - name: Prepare Package Directory
-        run: >
+        run: |
           mkdir -p build/usr/share/pixmaps
           cp build/assets/* build/linux/usr/share/pixmaps
 
@@ -61,8 +61,8 @@ jobs:
         uses: actions/setup-go@v5
 
       - name: Install container dependencies
-        run: >
-          pacman -Syu &&
+        run: |
+          pacman -Syu --noconfirm
           pacman --noconfirm -S git zip mingw-w64-x86_64-toolchain
 
       - name: Build
@@ -85,7 +85,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
 
       - name: Build
         run: go build -ldflags="-s -w -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina.dmg"
