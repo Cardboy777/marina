@@ -42,6 +42,18 @@ jobs:
       - name: Build
         run: go build -ldflags="-X 'marina/constants.AppVersion=${{ github.runId }}'" -o build/linux/AppDir/usr/bin/marina
 
+      - name: Package Appimage (Generate)
+        uses: AppImageCrafters/build-appimage@master
+        with:
+          args: "--generate"
+          recipe: "./build/linux/AppImageBuilder.yml"
+
+      - name: Upload gEN
+        uses: actions/upload-artifact@v4
+        with:
+          name: a-thing
+          path: AppImageBuilder.yml
+
       - name: Package Appimage
         uses: AppImageCrafters/build-appimage@master
         with:
