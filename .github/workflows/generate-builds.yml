@@ -2,9 +2,7 @@ name: generate-builds
 
 on:
   push:
-    branches: [$default-branch]
   pull_request:
-    branches: [$default-branch]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
