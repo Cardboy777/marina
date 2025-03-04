@@ -2,7 +2,7 @@
 version: 1
 
 script:
-  - which bsdtar || apt install libarchive-tools
+  - which bsdtar || apt install --assume-yes libarchive-tools
 
 AppDir:
   path: /mnt/Homes/reid/Repositories/marina/build/linux/AppDir
