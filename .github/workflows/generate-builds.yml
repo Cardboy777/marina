@@ -76,7 +76,6 @@ jobs:
 
   build-mac:
     runs-on: macos-14
-    needs: test
     steps:
       - uses: actions/checkout@v4
 
