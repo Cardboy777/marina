@@ -73,7 +73,7 @@ jobs:
         run: go get
 
       - name: Build
-        run: go build -ldflags="-s -w -H=windowsgui -extldflags=-static -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina"
+        run: go build -ldflags="-s -w -H=windowsgui -extldflags=-static -X 'marina/constants.AppVersion=${{ github.runId }}'" -o marina
 
       - name: Upload build
         uses: actions/upload-artifact@v4
@@ -101,7 +101,7 @@ jobs:
         run: go get
 
       - name: Build
-        run: go build -ldflags="-s -w -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina.dmg"
+        run: go build -ldflags="-s -w -X 'marina/constants.AppVersion=${{ github.runId }}'" -o marina.dmg
 
       - name: Upload build
         uses: actions/upload-artifact@v4
