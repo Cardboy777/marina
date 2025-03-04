@@ -3,17 +3,18 @@ module marina
 go 1.24.0
 
 require (
+	github.com/AllenDang/giu v0.12.0
 	github.com/adrg/xdg v0.5.3
 	github.com/google/go-github/v68 v68.0.0
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
+	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
 	github.com/sqweek/dialog v0.0.0-20240226140203-065105509627
 )
 
 require (
 	github.com/AllenDang/cimgui-go v1.3.0 // indirect
-	github.com/AllenDang/giu v0.12.0 // indirect
 	github.com/AllenDang/go-findfont v0.0.0-20200702051237-9f180485aeb8 // indirect
 	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3 // indirect
@@ -34,7 +35,6 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
