@@ -2,7 +2,11 @@ name: generate-builds
 
 on:
   push:
+    branches:
+      - "main"
   pull_request:
+    branches:
+      - "main"
   workflow_dispatch:
 
 concurrency:
@@ -33,7 +37,7 @@ jobs:
         run: go get
 
       - name: Build
-        run: go build -ldflags="-X 'marina/constants.AppVersion=${{ github.runId }}' -o build/linux/AppDir/usr/bin/marina"
+        run: go build -ldflags="-X 'marina/constants.AppVersion=${{ github.runId }}'" -o build/linux/AppDir/usr/bin/marina
 
       - name: Package Appimage
         uses: AppImageCrafters/build-appimage@master
