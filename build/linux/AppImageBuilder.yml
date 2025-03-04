@@ -1,7 +1,8 @@
 # appimage-builder recipe see https://appimage-builder.readthedocs.io for details
 version: 1
 
-script: which bsdtar || sudo apt-get install libarchive-tools
+script:
+  - which bsdtar || sudo apt install libarchive-tools
 
 AppDir:
   path: /mnt/Homes/reid/Repositories/marina/build/linux/AppDir
