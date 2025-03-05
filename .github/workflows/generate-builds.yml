@@ -46,7 +46,7 @@ jobs:
         uses: AppImageCrafters/build-appimage@master
         with:
           recipe: "./AppImageBuilder.yml"
-          log: INFO
+          args: --log INFO
         # env:
         #   UPDATE_INFO: gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|*x86_64.AppImage.zsync
 
@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: marina-linux
-          path: marina.appimage
+          # path: marina.appimage
 
   build-windows:
     runs-on: windows-latest
