@@ -46,7 +46,6 @@ jobs:
         uses: AppImageCrafters/build-appimage@master
         with:
           recipe: "./AppImageBuilder.yml"
-          args: --log INFO
         # env:
         #   UPDATE_INFO: gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|*x86_64.AppImage.zsync
 
