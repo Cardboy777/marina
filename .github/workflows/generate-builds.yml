@@ -34,7 +34,7 @@ jobs:
           mkdir -p build/linux/AppDir/usr/bin
           mkdir -p build/linux/AppDir/usr/share/pixmaps
           cp build/assets/* build/linux/AppDir/usr/share/pixmaps
-          cp build/linux/* .
+          cp -r build/linux/* .
 
       - name: Download Dependencies
         run: go get
