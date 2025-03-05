@@ -2,7 +2,7 @@
 version: 1
 
 AppDir:
-  path: build/linux/AppDir
+  path: marina/build/linux/AppDir
   app_info:
     id: marina
     name: Marina
