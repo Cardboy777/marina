@@ -49,6 +49,11 @@ jobs:
         # env:
         #   UPDATE_INFO: gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|*x86_64.AppImage.zsync
 
+      - name: Where is the appimage?
+        run: |
+          ls -l .
+          ls -l ..
+
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
