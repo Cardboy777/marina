@@ -4,7 +4,7 @@
 
 Marina is an **unofficial** launcher & version manager for the PC ports made by Harbour Masters.
 
-<!--![Marina Preview](docs/preview.png)-->
+![Marina Preview](docs/preview.png)
 
 ## Features
 
