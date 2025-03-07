@@ -54,7 +54,7 @@ func (i *VersionListItem) getInfo() *g.ColumnWidget {
 	}
 
 	return g.Column(
-		g.Label(fmt.Sprintf("Develop - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))),
+		g.Label(fmt.Sprintf("Unstable - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))),
 		g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(11).To(
 			g.Label(fmt.Sprintf("Commit: %s", i.UnstableVersion.Hash)),
 		),
