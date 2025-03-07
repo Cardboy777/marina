@@ -2,7 +2,12 @@ name: generate-builds
 
 on:
   push:
+    branches:
+      - "main"
   pull_request:
+    branches:
+      - "main"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,38 +15,50 @@ concurrency:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
 
       - name: Install container dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev
+          sudo apt-get install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev libgtk-3-dev
 
       - name: Prepare Package Directory
-        run: >
-          mkdir -p build/usr/share/pixmaps
-          cp build/assets/* build/linux/usr/share/pixmaps
+        run: |
+          mkdir -p build/linux/AppDir/usr/bin
+          mkdir -p build/linux/AppDir/usr/share/pixmaps
+          cp build/assets/* build/linux/AppDir/usr/share/pixmaps
+          cp -r build/linux/* .
+
+      - name: Download Dependencies
+        run: go get
 
       - name: Build
-        run: go build -ldflags="-X 'marina/constants.AppVersion=${{ github.runId }}' -o build/linux/AppDir/usr/bin/marina"
+        run: go build -ldflags="-X 'marina/constants.AppVersion=${{ github.runId }}'" -o ./AppDir/usr/bin/marina
 
       - name: Package Appimage
         uses: AppImageCrafters/build-appimage@master
         with:
-          recipe: "./build/linux/AppImageBuilder.yml"
+          recipe: "./AppImageBuilder.yml"
         # env:
         #   UPDATE_INFO: gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|*x86_64.AppImage.zsync
+
+      - name: Arrange Artifacts
+        run: |
+          mkdir artifacts
+          mv *.AppImage* artifacts
 
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
           name: marina-linux
-          path: marina.appimage
+          path: artifacts
 
   build-windows:
     runs-on: windows-latest
@@ -58,24 +75,28 @@ jobs:
 
       - name: Set up Go
         uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
 
       - name: Install container dependencies
-        run: >
-          pacman -Syu &&
+        run: |
+          pacman -Syu --noconfirm
           pacman --noconfirm -S git zip mingw-w64-x86_64-toolchain
 
+      - name: Download Dependencies
+        run: go get
+
       - name: Build
-        run: go build -ldflags="-s -w -H=windowsgui -extldflags=-static -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina"
+        run: go build -ldflags "-X 'marina/constants.AppVersion=${{ github.runId }}' -s -w -H=windowsgui -extldflags=-static" -o marina.exe
 
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
           name: marina-windows
-          path: marina
+          path: marina.exe
 
   build-mac:
     runs-on: macos-14
-    needs: test
     steps:
       - uses: actions/checkout@v4
 
@@ -85,10 +106,15 @@ jobs:
           xcode-version: latest-stable
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Download Dependencies
+        run: go get
 
       - name: Build
-        run: go build -ldflags="-s -w -X 'marina/constants.AppVersion=${{ github.runId }}' -o marina.dmg"
+        run: go build -ldflags="-s -w -X 'marina/constants.AppVersion=${{ github.runId }}'" -o marina.dmg
 
       - name: Upload build
         uses: actions/upload-artifact@v4

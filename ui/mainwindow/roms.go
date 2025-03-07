@@ -24,9 +24,9 @@ func GetRomDisplay() *g.ColumnWidget {
 	return g.Column(
 		g.Button("Add Rom").OnClick(addRom),
 		g.Label("Installed Roms:"),
-		g.Column(
+		g.Style().SetFontSize(14).To(g.Column(
 			getRomsList()...,
-		),
+		)),
 	)
 }
 
