@@ -87,7 +87,7 @@ jobs:
         run: go get
 
       - name: Build
-        run: go build -ldflags="-s -w -H=windowsgui -extldflags=-static -X 'marina/constants.AppVersion=${{ github.runId }}'" -o marina.exe
+        run: go build -ldflags "-X 'marina/constants.AppVersion=${{ github.runId }}' -s -w -H=windowsgui -extldflags=-static" -o marina.exe
 
       - name: Upload build
         uses: actions/upload-artifact@v4
