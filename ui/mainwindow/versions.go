@@ -101,6 +101,10 @@ func (i *VersionListItem) play() {
 }
 
 func (i *VersionListItem) delete() {
+	if !dialogs.ShowConfirmDialog("Delete?", "Delete version? Configurations, Saves, and Mods will be permanently lost.") {
+		return
+	}
+
 	var err error
 	if i.isStableVersion() {
 		err = files.DeleteVersion(i.StableVersion)
