@@ -250,11 +250,11 @@ func IsExecutable(file os.FileInfo) bool {
 	}
 
 	switch {
-	case runtime.GOOS == "linux" && strings.HasSuffix(file.Name(), ".appimage"):
+	case runtime.GOOS == "linux" && strings.HasSuffix(strings.ToLower(file.Name()), ".appimage"):
 		return true
-	case runtime.GOOS == "mac" && strings.HasSuffix(file.Name(), ".dmg"):
+	case runtime.GOOS == "darwin" && strings.HasSuffix(strings.ToLower(file.Name()), ".dmg"):
 		return true
-	case runtime.GOOS == "windows" && strings.HasSuffix(file.Name(), ".exe"):
+	case runtime.GOOS == "windows" && strings.HasSuffix(strings.ToLower(file.Name()), ".exe"):
 		return true
 	}
 

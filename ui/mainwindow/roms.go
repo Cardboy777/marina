@@ -4,6 +4,7 @@ import (
 	"marina/files"
 	"marina/stores"
 	"marina/ui/dialogs"
+	"marina/ui/fonts"
 
 	g "github.com/AllenDang/giu"
 )
@@ -24,7 +25,7 @@ func GetRomDisplay() *g.ColumnWidget {
 	return g.Column(
 		g.Button("Add Rom").OnClick(addRom),
 		g.Label("Installed Roms:"),
-		g.Style().SetFontSize(14).To(g.Column(
+		g.Style().SetFontSize(fonts.SubHeaderSize).To(g.Column(
 			getRomsList()...,
 		)),
 	)

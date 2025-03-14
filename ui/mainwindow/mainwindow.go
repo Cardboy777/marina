@@ -3,6 +3,7 @@ package mainwindow
 import (
 	"marina/constants"
 	"marina/types"
+	"marina/ui/fonts"
 
 	g "github.com/AllenDang/giu"
 )
@@ -13,7 +14,7 @@ var mainSplit float32 = 200
 
 func Loop() {
 	g.SingleWindow().Layout(
-		g.Style().SetFontSize(19).To(
+		g.Style().SetFontSize(fonts.HeaderSize).To(
 			g.SplitLayout(g.DirectionVertical, &mainSplit,
 				g.Column(
 					GetGameSelector(),

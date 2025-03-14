@@ -26,3 +26,9 @@ func (d *UnstableVersion) GetDownloadUrl() (string, error) {
 	}
 	return "", errors.New("No compatible Version found")
 }
+
+func (d *UnstableVersion) CanDownload() bool {
+	_, err := d.GetDownloadUrl()
+
+	return err == nil
+}

@@ -8,6 +8,7 @@ import (
 	"marina/stores"
 	"marina/types"
 	"marina/ui/dialogs"
+	"marina/ui/fonts"
 	"time"
 
 	g "github.com/AllenDang/giu"
@@ -47,7 +48,7 @@ func (i *VersionListItem) getInfo() *g.ColumnWidget {
 	if i.isStableVersion() {
 		return g.Column(
 			g.Label(i.StableVersion.Name),
-			g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(11).To(
+			g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(fonts.CaptionSize).To(
 				g.Label(i.StableVersion.ReleaseDate.Format(time.DateOnly)),
 			),
 		)
@@ -55,7 +56,7 @@ func (i *VersionListItem) getInfo() *g.ColumnWidget {
 
 	return g.Column(
 		g.Label(fmt.Sprintf("Unstable - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))),
-		g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(11).To(
+		g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(fonts.CaptionSize).To(
 			g.Label(fmt.Sprintf("Commit: %s", i.UnstableVersion.Hash)),
 		),
 	)
@@ -67,13 +68,30 @@ func (i *VersionListItem) getButtons() *g.RowWidget {
 
 	if isInstalled {
 		return g.Row(
-			g.Button("Open").OnClick(i.openDir),
-			g.Button("Delete").OnClick(i.delete),
-			g.Button("Play").OnClick(i.play),
+			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).SetColor(g.StyleColorText, color.RGBA{0xFF, 0x00, 0x00, 255}).To(
+				g.Button("").OnClick(i.delete),
+			),
+			// g.Tooltip("Delete"),
+
+			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").OnClick(i.openDir)),
+			// g.Tooltip("Open Install Directory"),
+
+			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").OnClick(i.play)),
+			// g.Tooltip("Play"),
 		)
 	}
 
-	return g.Row(g.Button("Install").OnClick(i.install))
+	var canDownload bool
+	if i.isStableVersion() {
+		canDownload = i.StableVersion.CanDownload()
+	} else {
+		canDownload = i.UnstableVersion.CanDownload()
+	}
+
+	return g.Row(
+		g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").Disabled(!canDownload).OnClick(i.install)),
+		// g.Tooltip("Install"),
+	)
 }
 
 func (i *VersionListItem) install() {
