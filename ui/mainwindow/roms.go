@@ -18,13 +18,19 @@ func getRomsList() []g.Widget {
 		list = append(list, g.Label(r.Name))
 	}
 
+	if len(list) == 0 {
+		list = append(list, g.Style().SetColor(g.StyleColorText, fonts.ColorCaption).To(g.Label("- None -")))
+	}
+
 	return list
 }
 
 func GetRomDisplay() *g.ColumnWidget {
 	return g.Column(
-		g.Button("Add Rom").OnClick(addRom),
-		g.Label("Installed Roms:"),
+		g.Row(
+			g.Label("Installed Roms:"),
+			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.HeaderSize).To(g.Button("+").OnClick(addRom)),
+		),
 		g.Style().SetFontSize(fonts.SubHeaderSize).To(g.Column(
 			getRomsList()...,
 		)),

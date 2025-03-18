@@ -2,8 +2,14 @@ package fonts
 
 import (
 	_ "embed"
+	"image/color"
 
 	g "github.com/AllenDang/giu"
+)
+
+var (
+	ColorDestructive = color.RGBA{0xFF, 0, 0, 255}
+	ColorCaption     = color.RGBA{217, 217, 217, 255}
 )
 
 const (

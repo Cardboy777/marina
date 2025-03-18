@@ -3,6 +3,7 @@ package mainwindow
 import (
 	"marina/services"
 	"marina/ui/dialogs"
+	"marina/ui/fonts"
 	"marina/ui/settings"
 
 	g "github.com/AllenDang/giu"
@@ -16,16 +17,10 @@ func RefreshVersions(force bool) {
 }
 
 func GetToolbar() *g.AlignmentSetter {
-	refreshBtn := g.Button("Refresh")
-	refreshBtn.OnClick(func() { RefreshVersions(true) })
-
-	settingsBtn := g.Button("Settings")
-	settingsBtn.OnClick(settings.ShowDialog)
-
 	return g.Align(g.AlignRight).To(
 		g.Row(
-			settingsBtn,
-			refreshBtn,
+			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").OnClick(settings.ShowDialog)),
+			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").OnClick(func() { RefreshVersions(true) })),
 			settings.GetSettingsDialog(),
 		),
 	)

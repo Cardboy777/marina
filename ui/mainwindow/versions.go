@@ -2,7 +2,6 @@ package mainwindow
 
 import (
 	"fmt"
-	"image/color"
 	"marina/files"
 	"marina/launcher"
 	"marina/stores"
@@ -42,13 +41,11 @@ func (i *VersionListItem) getWidget() *g.TableRowWidget {
 	)
 }
 
-var subTextColor = color.RGBA{217, 217, 217, 255}
-
 func (i *VersionListItem) getInfo() *g.ColumnWidget {
 	if i.isStableVersion() {
 		return g.Column(
 			g.Label(i.StableVersion.Name),
-			g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(fonts.CaptionSize).To(
+			g.Style().SetColor(g.StyleColorText, fonts.ColorCaption).SetFontSize(fonts.CaptionSize).To(
 				g.Label(i.StableVersion.ReleaseDate.Format(time.DateOnly)),
 			),
 		)
@@ -56,7 +53,7 @@ func (i *VersionListItem) getInfo() *g.ColumnWidget {
 
 	return g.Column(
 		g.Label(fmt.Sprintf("Unstable - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))),
-		g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(fonts.CaptionSize).To(
+		g.Style().SetColor(g.StyleColorText, fonts.ColorCaption).SetFontSize(fonts.CaptionSize).To(
 			g.Label(fmt.Sprintf("Commit: %s", i.UnstableVersion.Hash)),
 		),
 	)
@@ -68,7 +65,7 @@ func (i *VersionListItem) getButtons() *g.RowWidget {
 
 	if isInstalled {
 		return g.Row(
-			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).SetColor(g.StyleColorText, color.RGBA{0xFF, 0x00, 0x00, 255}).To(
+			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).SetColor(g.StyleColorText, fonts.ColorDestructive).To(
 				g.Button("").OnClick(i.delete),
 			),
 			// g.Tooltip("Delete"),

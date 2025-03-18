@@ -3,6 +3,7 @@ package settings
 import (
 	"marina/settings"
 	"marina/ui/dialogs"
+	"marina/ui/fonts"
 
 	g "github.com/AllenDang/giu"
 )
@@ -15,7 +16,7 @@ func GetSettingsDialog() *g.PopupModalWidget {
 			g.Row(
 				g.Label("Install Directory:"),
 				g.InputText(&installDirectoryInput).Size(300).Hint(settings.GetDefaultInstallDir()),
-				chooseDirButton(),
+				g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.HeaderSize).To(chooseDirButton()),
 			),
 			g.Spacing(),
 			g.Spacing(),
@@ -38,7 +39,7 @@ func ShowDialog() {
 }
 
 func chooseDirButton() *g.ButtonWidget {
-	btn := g.Button("Select")
+	btn := g.Button("")
 
 	btn.OnClick(func() {
 		val, err := dialogs.ShowDirectoryPickerDialog("Choose Install Directory")
