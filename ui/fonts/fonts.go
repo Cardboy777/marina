@@ -8,13 +8,13 @@ import (
 )
 
 var (
-	ColorDestructive = color.RGBA{0xFF, 0, 0, 255}
-	ColorCaption     = color.RGBA{217, 217, 217, 255}
+	ColorDefault     = color.RGBA{0xFF, 0xFF, 0xFF, 0xFF}
+	ColorDestructive = color.RGBA{0xFF, 0x00, 0x00, 0xFF}
+	ColorCaption     = color.RGBA{0xD9, 0xD9, 0xD9, 0xFF}
 )
 
 const (
-	IconSize      = 22
-	HeaderSize    = 19
+	HeaderSize    = 18
 	SubHeaderSize = 14
 	CaptionSize   = 11
 )
@@ -22,7 +22,7 @@ const (
 type FontType int
 
 const (
-	GlyphFontType FontType = iota
+	DefaultFontType FontType = iota
 )
 
 var fonts = make([]font, 1)
@@ -46,7 +46,7 @@ func InitializeFonts() {
 	for _, f := range fonts {
 		f.fontInfo = g.Context.FontAtlas.AddFontFromBytes(f.name, f.bytes, 11)
 		switch f.fontType {
-		case GlyphFontType:
+		case DefaultFontType:
 			GlyphFont = f.fontInfo
 		}
 	}

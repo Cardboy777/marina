@@ -5,10 +5,10 @@ import (
 	"marina/ui/fonts"
 )
 
-//go:embed vendor/font-awesome/font-awesome-6-solid.otf
-var glyphBytes []byte
-var glyphFontName = "Font Awesome 6 Solid"
+//go:embed vendor/fonts/ProFontIIxNerdFont-Regular.ttf
+var fontBytes []byte
+var fontName = "ProggyClean Nerd Font"
 
 func LoadAssets() {
-	fonts.AddFont(fonts.GlyphFontType, glyphFontName, glyphBytes)
+	fonts.AddFont(fonts.DefaultFontType, fontName, fontBytes)
 }

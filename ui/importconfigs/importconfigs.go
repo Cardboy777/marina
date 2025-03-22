@@ -1,4 +1,4 @@
-package settings
+package importconfigs
 
 import (
 	"marina/settings"
@@ -7,10 +7,13 @@ import (
 	g "github.com/AllenDang/giu"
 )
 
-var installDirectoryInput string
+var (
+	sourceVersion         *any
+	installDirectoryInput string
+)
 
 func GetSettingsDialog() *g.PopupModalWidget {
-	return g.PopupModal("Settings").Layout(
+	return g.PopupModal("Import").Layout(
 		g.Column(
 			g.Row(
 				g.Label("Install Directory:"),
@@ -24,7 +27,7 @@ func GetSettingsDialog() *g.PopupModalWidget {
 			g.Align(g.AlignCenter).To(
 				g.Row(
 					cancelButton(),
-					saveChangesButton(),
+					importButton(),
 				),
 			),
 		),
@@ -64,13 +67,12 @@ func cancelButton() *g.ButtonWidget {
 	return btn
 }
 
-func saveChangesButton() *g.ButtonWidget {
-	btn := g.Button("Save Changes")
+func importButton() *g.ButtonWidget {
+	btn := g.Button("Import")
 
 	btn.OnClick(func() {
 		if settings.GetInstallDirName() != installDirectoryInput {
-			settings.SetInstallDir(installDirectoryInput)
-			g.Context.Backend().SetShouldClose(true)
+			// copy files
 		} else {
 			g.CloseCurrentPopup()
 		}

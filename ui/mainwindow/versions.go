@@ -22,6 +22,29 @@ func (i *VersionListItem) isStableVersion() bool {
 	return i.StableVersion != nil
 }
 
+func (i *VersionListItem) getName() string {
+	if i.isStableVersion() {
+		return i.StableVersion.Name
+	}
+	return fmt.Sprintf("Unstable - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))
+}
+
+func (i *VersionListItem) getCaption() string {
+	if i.isStableVersion() {
+		return i.StableVersion.ReleaseDate.Format(time.DateOnly)
+	}
+	return fmt.Sprintf("Commit: %s", i.UnstableVersion.Hash)
+}
+
+func (i *VersionListItem) getPopoupName() string {
+	return fmt.Sprintf("Options##%s", i.getName())
+}
+
+func (i *VersionListItem) openPopoup() {
+	g.OpenPopup(i.getPopoupName())
+	g.Update()
+}
+
 func (i *VersionListItem) getWidget() *g.TableRowWidget {
 	return g.TableRow(
 		g.Column(
@@ -42,19 +65,10 @@ func (i *VersionListItem) getWidget() *g.TableRowWidget {
 }
 
 func (i *VersionListItem) getInfo() *g.ColumnWidget {
-	if i.isStableVersion() {
-		return g.Column(
-			g.Label(i.StableVersion.Name),
-			g.Style().SetColor(g.StyleColorText, fonts.ColorCaption).SetFontSize(fonts.CaptionSize).To(
-				g.Label(i.StableVersion.ReleaseDate.Format(time.DateOnly)),
-			),
-		)
-	}
-
 	return g.Column(
-		g.Label(fmt.Sprintf("Unstable - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))),
+		g.Label(i.getName()),
 		g.Style().SetColor(g.StyleColorText, fonts.ColorCaption).SetFontSize(fonts.CaptionSize).To(
-			g.Label(fmt.Sprintf("Commit: %s", i.UnstableVersion.Hash)),
+			g.Label(i.getCaption()),
 		),
 	)
 }
@@ -65,16 +79,18 @@ func (i *VersionListItem) getButtons() *g.RowWidget {
 
 	if isInstalled {
 		return g.Row(
-			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).SetColor(g.StyleColorText, fonts.ColorDestructive).To(
-				g.Button("").OnClick(i.delete),
+			g.Button(" Play").OnClick(i.play),
+			g.Button("").OnClick(i.openPopoup),
+			g.Popup(i.getPopoupName()).Layout(
+				g.Column(
+					g.Button(" Open Dir").OnClick(i.openDir),
+					// g.Button("󰋺 Import").OnClick(i.importConfig),
+					g.Separator(),
+					g.Style().SetColor(g.StyleColorText, fonts.ColorDestructive).To(
+						g.Button(" Delete").OnClick(i.delete),
+					),
+				),
 			),
-			// g.Tooltip("Delete"),
-
-			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").OnClick(i.openDir)),
-			// g.Tooltip("Open Install Directory"),
-
-			g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").OnClick(i.play)),
-			// g.Tooltip("Play"),
 		)
 	}
 
@@ -86,8 +102,7 @@ func (i *VersionListItem) getButtons() *g.RowWidget {
 	}
 
 	return g.Row(
-		g.Style().SetFont(fonts.GlyphFont).SetFontSize(fonts.IconSize).To(g.Button("").Disabled(!canDownload).OnClick(i.install)),
-		// g.Tooltip("Install"),
+		g.Button(" Install").Disabled(!canDownload).OnClick(i.install),
 	)
 }
 
@@ -141,6 +156,9 @@ func (i *VersionListItem) openDir() {
 	}
 
 	dialogs.OpenDirectory(dir)
+}
+
+func (i *VersionListItem) importConfig() {
 }
 
 func getVersionListItems() *[]VersionListItem {
