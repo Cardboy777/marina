@@ -1,7 +1,7 @@
 package mainwindow
 
 import (
-	"marina/constants"
+	"marina/constants/games"
 	"marina/types"
 
 	g "github.com/AllenDang/giu"
@@ -13,9 +13,9 @@ func selectGame(repository *marina.Repository) {
 }
 
 func getGameOptions() []string {
-	list := make([]string, len(constants.Repositories))
+	list := make([]string, len(games.Repositories))
 
-	for i, r := range constants.Repositories {
+	for i, r := range games.Repositories {
 		list[i] = r.Name
 	}
 
@@ -28,7 +28,7 @@ func GetGameSelector() *g.ColumnWidget {
 	return g.Column(
 		g.Label("Select Game:"),
 		g.ListBox(getGameOptions()).SelectedIndex(&selectedIndex).OnChange(func(index int) {
-			selectGame(constants.Repositories[index])
+			selectGame(games.Repositories[index])
 		}).Size(0, 200),
 	)
 }

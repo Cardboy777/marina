@@ -1,7 +1,7 @@
 package mainwindow
 
 import (
-	"marina/constants"
+	"marina/constants/games"
 	"marina/types"
 	"marina/ui/fonts"
 
@@ -9,7 +9,7 @@ import (
 	g "github.com/AllenDang/giu"
 )
 
-var SelectedGame *marina.Repository = &constants.SohDefinition
+var SelectedGame *marina.Repository = &games.SohDefinition
 
 var mainSplit float32 = 200
 

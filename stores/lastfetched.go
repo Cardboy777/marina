@@ -1,7 +1,7 @@
 package stores
 
 import (
-	"marina/constants"
+	"marina/constants/games"
 	"marina/db"
 	"marina/types"
 	"time"
@@ -10,7 +10,7 @@ import (
 var lastFetchedStore = []*time.Time{}
 
 func initializeLastFetchedStoreIfNecessary() {
-	for len(lastFetchedStore) < len(constants.Repositories) {
+	for len(lastFetchedStore) < len(games.Repositories) {
 		lastFetchedStore = append(lastFetchedStore, nil)
 	}
 }

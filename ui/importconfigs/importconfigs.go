@@ -1,11 +1,13 @@
 package importconfigs
 
 import (
+	"errors"
 	"fmt"
 	"marina/files"
 	"marina/stores"
 	marina "marina/types"
 	"marina/ui/dialogs"
+	"marina/ui/fonts"
 
 	g "github.com/AllenDang/giu"
 )
@@ -13,17 +15,19 @@ import (
 const importModalId = "Import"
 
 var (
+	initialPreviewText        = "Select a Version"
 	stableVersion             *marina.Version
 	unstableVersion           *marina.UnstableVersion
 	installedStableVersions   []marina.Version
 	installedUnstableVersions []marina.UnstableVersion
+	repository                *marina.Repository
 	selectedVersion           int32
 	versionList               []string
-	previewText               = "Select a Version"
+	previewText               = &initialPreviewText
 	importEnabled             = false
 
 	transferSettings   = true
-	transferMods       = true
+	transferMods       = false
 	transferRandomizer = false
 	transferSaves      = false
 )
@@ -32,15 +36,30 @@ func GetImportDialog() *g.PopupModalWidget {
 	return g.PopupModal(importModalId).Layout(
 		// Selector here
 		g.Column(
-
 			g.Label("Import from:"),
-			g.Combo("", previewText, versionList, &selectedVersion).OnChange(updatePreviewText),
+			g.Combo("", *previewText, versionList, &selectedVersion).OnChange(updatePreviewText),
+			g.Spacing(),
 			g.Spacing(),
 			g.Label("Select the types of files you want to import:"),
-			g.Checkbox("Settings", &transferSettings),
-			g.Checkbox("Mods", &transferMods),
-			g.Checkbox("Randomizer Seeds", &transferRandomizer),
-			g.Checkbox("Save Files", &transferSaves),
+			g.Style().SetDisabled(repository == nil || !repository.Imports.Configuration.Capable).To(
+				g.Checkbox("Settings", &transferSettings),
+			),
+			g.Style().SetDisabled(repository == nil || !repository.Imports.Mods.Capable).To(
+				g.Row(
+					g.Checkbox("Mods", &transferMods),
+					g.Column(
+						g.Spacing(),
+						g.Spacing(),
+						g.Style().SetFontSize(fonts.CaptionSize).To(g.Label("Copying may take time. When installing mods, consider using shortcuts instead.")),
+					),
+				),
+			),
+			g.Style().SetDisabled(repository == nil || !repository.Imports.Randomizer.Capable).To(
+				g.Checkbox("Randomizer Seeds", &transferRandomizer),
+			),
+			g.Style().SetDisabled(repository == nil || !repository.Imports.Saves.Capable).To(
+				g.Checkbox("Save Files", &transferSaves),
+			),
 			g.Spacing(),
 			g.Spacing(),
 			g.Spacing(),
@@ -58,11 +77,7 @@ func GetImportDialog() *g.PopupModalWidget {
 func updatePreviewText() {
 	importEnabled = true
 
-	if int(selectedVersion) < len(installedUnstableVersions) {
-		previewText = installedUnstableVersions[selectedVersion].GetName()
-	} else {
-		previewText = installedStableVersions[selectedVersion].GetName()
-	}
+	previewText = &(versionList[selectedVersion])
 
 	g.Update()
 }
@@ -70,10 +85,12 @@ func updatePreviewText() {
 func closeDialog() {
 	versionList = []string{}
 	g.CloseCurrentPopup()
+	g.Update()
 }
 
 func ShowDialogStable(version *marina.Version) {
 	stableVersion = version
+	repository = stableVersion.Repository
 	unstableVersion = nil
 	show()
 }
@@ -81,27 +98,27 @@ func ShowDialogStable(version *marina.Version) {
 func ShowDialogUnstable(version *marina.UnstableVersion) {
 	stableVersion = nil
 	unstableVersion = version
+	repository = unstableVersion.Repository
 	show()
 }
 
 func show() {
 	importEnabled = false
+	previewText = &initialPreviewText
+
+	transferSettings = true
+	transferMods = false
+	transferRandomizer = false
+	transferSaves = false
+
 	g.OpenPopup(importModalId)
 	g.Update()
 	generateVersionOptions()
 }
 
 func generateVersionOptions() {
-	var repo *marina.Repository
-
-	if stableVersion != nil {
-		repo = stableVersion.Repository
-	} else {
-		repo = unstableVersion.Repository
-	}
-
-	stable := stores.GetVersions(repo)
-	unstable := stores.GetUnstableVersions(repo)
+	stable := stores.GetVersions(repository)
+	unstable := stores.GetUnstableVersions(repository)
 
 	for _, v := range *unstable {
 		if v.Installed && (unstableVersion == nil || (unstableVersion.Hash != v.Hash)) {
@@ -142,36 +159,35 @@ func importFiles() {
 		panic(err)
 	}
 	src := getSourceInstallDir()
-
-	errorText := ""
+	errs := []error{}
 
 	if transferSettings {
-		err := files.ImportSettings(src, dest)
+		err := files.ImportCategory(src, dest, repository.Imports.Configuration)
 		if err != nil {
-			errorText = fmt.Sprintf("%s\n%s", errorText, err)
+			errs = append(errs, err)
 		}
 	}
 	if transferRandomizer {
-		err := files.ImportRandomizer(src, dest)
+		err := files.ImportCategory(src, dest, repository.Imports.Randomizer)
 		if err != nil {
-			errorText = fmt.Sprintf("%s\n%s", errorText, err)
+			errs = append(errs, err)
 		}
 	}
 	if transferSaves {
-		err := files.ImportSaves(src, dest)
+		err := files.ImportCategory(src, dest, repository.Imports.Saves)
 		if err != nil {
-			errorText = fmt.Sprintf("%s\n%s", errorText, err)
+			errs = append(errs, err)
 		}
 	}
 	if transferMods {
-		err := files.ImportMods(src, dest)
+		err := files.ImportCategory(src, dest, repository.Imports.Mods)
 		if err != nil {
-			errorText = fmt.Sprintf("%s\n%s", errorText, err)
+			errs = append(errs, err)
 		}
 	}
 
-	if len(errorText) > 0 {
-		dialogs.ShowErrorDialog(fmt.Errorf("%s", errorText))
+	if len(errs) > 0 {
+		dialogs.ShowErrorDialog(errors.Join(errs...))
 		return
 	}
 

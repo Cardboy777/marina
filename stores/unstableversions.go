@@ -1,7 +1,7 @@
 package stores
 
 import (
-	"marina/constants"
+	"marina/constants/games"
 	"marina/db"
 	"marina/types"
 )
@@ -35,7 +35,7 @@ func SetUnstableVersionInstalled(version *marina.UnstableVersion, installed bool
 func RemoveOldUnstableVersions() {
 	var latest *marina.UnstableVersion
 
-	for _, repo := range constants.Repositories {
+	for _, repo := range games.Repositories {
 		versions := GetUnstableVersions(repo)
 
 		latest = findLatestVersion(versions)
