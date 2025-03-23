@@ -8,6 +8,7 @@ import (
 	"marina/types"
 	"marina/ui/dialogs"
 	"marina/ui/fonts"
+	"marina/ui/importconfigs"
 	"time"
 
 	g "github.com/AllenDang/giu"
@@ -24,9 +25,9 @@ func (i *VersionListItem) isStableVersion() bool {
 
 func (i *VersionListItem) getName() string {
 	if i.isStableVersion() {
-		return i.StableVersion.Name
+		return i.StableVersion.GetName()
 	}
-	return fmt.Sprintf("Unstable - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))
+	return i.UnstableVersion.GetName()
 }
 
 func (i *VersionListItem) getCaption() string {
@@ -79,18 +80,19 @@ func (i *VersionListItem) getButtons() *g.RowWidget {
 
 	if isInstalled {
 		return g.Row(
-			g.Button(" Play").OnClick(i.play),
 			g.Button("").OnClick(i.openPopoup),
 			g.Popup(i.getPopoupName()).Layout(
 				g.Column(
-					g.Button(" Open Dir").OnClick(i.openDir),
-					// g.Button("󰋺 Import").OnClick(i.importConfig),
+					g.Button(" Open").OnClick(i.openDir),
+					g.Button("󰋺 Import").OnClick(i.importConfig),
 					g.Separator(),
 					g.Style().SetColor(g.StyleColorText, fonts.ColorDestructive).To(
 						g.Button(" Delete").OnClick(i.delete),
 					),
+					importconfigs.GetImportDialog(),
 				),
-			),
+			).Flags(g.WindowFlagsNoMove),
+			g.Button(" Play").OnClick(i.play),
 		)
 	}
 
@@ -159,6 +161,11 @@ func (i *VersionListItem) openDir() {
 }
 
 func (i *VersionListItem) importConfig() {
+	if i.isStableVersion() {
+		importconfigs.ShowDialogStable(i.StableVersion)
+	} else {
+		importconfigs.ShowDialogUnstable(i.UnstableVersion)
+	}
 }
 
 func getVersionListItems() *[]VersionListItem {

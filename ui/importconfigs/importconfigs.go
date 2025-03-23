@@ -1,82 +1,179 @@
 package importconfigs
 
 import (
-	"marina/settings"
+	"fmt"
+	"marina/files"
+	"marina/stores"
+	marina "marina/types"
 	"marina/ui/dialogs"
 
 	g "github.com/AllenDang/giu"
 )
 
+const importModalId = "Import"
+
 var (
-	sourceVersion         *any
-	installDirectoryInput string
+	stableVersion             *marina.Version
+	unstableVersion           *marina.UnstableVersion
+	installedStableVersions   []marina.Version
+	installedUnstableVersions []marina.UnstableVersion
+	selectedVersion           int32
+	versionList               []string
+	previewText               = "Select a Version"
+	importEnabled             = false
+
+	transferSettings   = true
+	transferMods       = true
+	transferRandomizer = false
+	transferSaves      = false
 )
 
-func GetSettingsDialog() *g.PopupModalWidget {
-	return g.PopupModal("Import").Layout(
+func GetImportDialog() *g.PopupModalWidget {
+	return g.PopupModal(importModalId).Layout(
+		// Selector here
 		g.Column(
-			g.Row(
-				g.Label("Install Directory:"),
-				g.InputText(&installDirectoryInput).Size(300).Hint(settings.GetDefaultInstallDir()),
-				chooseDirButton(),
-			),
+
+			g.Label("Import from:"),
+			g.Combo("", previewText, versionList, &selectedVersion).OnChange(updatePreviewText),
+			g.Spacing(),
+			g.Label("Select the types of files you want to import:"),
+			g.Checkbox("Settings", &transferSettings),
+			g.Checkbox("Mods", &transferMods),
+			g.Checkbox("Randomizer Seeds", &transferRandomizer),
+			g.Checkbox("Save Files", &transferSaves),
 			g.Spacing(),
 			g.Spacing(),
 			g.Spacing(),
 			g.Spacing(),
 			g.Align(g.AlignCenter).To(
 				g.Row(
-					cancelButton(),
-					importButton(),
+					g.Button("Cancel").OnClick(closeDialog),
+					g.Button("Import").OnClick(importFiles).Disabled(!importEnabled),
 				),
 			),
 		),
 	).Flags(g.WindowFlagsNoDocking).Flags(g.WindowFlagsNoResize).Flags(g.WindowFlagsAlwaysAutoResize)
 }
 
-func ShowDialog() {
-	installDirectoryInput = settings.GetInstallDirName()
-	g.OpenPopup("Settings")
+func updatePreviewText() {
+	importEnabled = true
+
+	if int(selectedVersion) < len(installedUnstableVersions) {
+		previewText = installedUnstableVersions[selectedVersion].GetName()
+	} else {
+		previewText = installedStableVersions[selectedVersion].GetName()
+	}
+
 	g.Update()
 }
 
-func chooseDirButton() *g.ButtonWidget {
-	btn := g.Button("")
+func closeDialog() {
+	versionList = []string{}
+	g.CloseCurrentPopup()
+}
 
-	btn.OnClick(func() {
-		val, err := dialogs.ShowDirectoryPickerDialog("Choose Install Directory")
+func ShowDialogStable(version *marina.Version) {
+	stableVersion = version
+	unstableVersion = nil
+	show()
+}
+
+func ShowDialogUnstable(version *marina.UnstableVersion) {
+	stableVersion = nil
+	unstableVersion = version
+	show()
+}
+
+func show() {
+	importEnabled = false
+	g.OpenPopup(importModalId)
+	g.Update()
+	generateVersionOptions()
+}
+
+func generateVersionOptions() {
+	var repo *marina.Repository
+
+	if stableVersion != nil {
+		repo = stableVersion.Repository
+	} else {
+		repo = unstableVersion.Repository
+	}
+
+	stable := stores.GetVersions(repo)
+	unstable := stores.GetUnstableVersions(repo)
+
+	for _, v := range *unstable {
+		if v.Installed && (unstableVersion == nil || (unstableVersion.Hash != v.Hash)) {
+			installedUnstableVersions = append(installedUnstableVersions, v)
+			versionList = append(versionList, v.GetName())
+		}
+	}
+
+	for _, v := range *stable {
+		if v.Installed && (stableVersion == nil || (stableVersion.TagName != v.TagName)) {
+			installedStableVersions = append(installedStableVersions, v)
+			versionList = append(versionList, v.GetName())
+		}
+	}
+}
+
+func getSourceInstallDir() string {
+	if int(selectedVersion) < len(installedUnstableVersions) {
+		return files.GetUnstableVersionInstallDirPath(&installedUnstableVersions[selectedVersion])
+	}
+	return files.GetVersionInstallDirPath(&installedStableVersions[selectedVersion])
+}
+
+func getDestinationInstallDir() (string, error) {
+	if stableVersion != nil {
+		return files.GetVersionInstallDirPath(stableVersion), nil
+	}
+	if unstableVersion != nil {
+		return files.GetUnstableVersionInstallDirPath(unstableVersion), nil
+	}
+
+	return "", fmt.Errorf("No Version Selected")
+}
+
+func importFiles() {
+	dest, err := getDestinationInstallDir()
+	if err != nil {
+		panic(err)
+	}
+	src := getSourceInstallDir()
+
+	errorText := ""
+
+	if transferSettings {
+		err := files.ImportSettings(src, dest)
 		if err != nil {
-			dialogs.ShowErrorDialog(err)
+			errorText = fmt.Sprintf("%s\n%s", errorText, err)
 		}
-
-		if val != "" {
-			installDirectoryInput = val
-			g.Update()
+	}
+	if transferRandomizer {
+		err := files.ImportRandomizer(src, dest)
+		if err != nil {
+			errorText = fmt.Sprintf("%s\n%s", errorText, err)
 		}
-	})
-
-	return btn
-}
-
-func cancelButton() *g.ButtonWidget {
-	btn := g.Button("Cancel")
-	btn.OnClick(func() {
-		g.CloseCurrentPopup()
-	})
-
-	return btn
-}
-
-func importButton() *g.ButtonWidget {
-	btn := g.Button("Import")
-
-	btn.OnClick(func() {
-		if settings.GetInstallDirName() != installDirectoryInput {
-			// copy files
-		} else {
-			g.CloseCurrentPopup()
+	}
+	if transferSaves {
+		err := files.ImportSaves(src, dest)
+		if err != nil {
+			errorText = fmt.Sprintf("%s\n%s", errorText, err)
 		}
-	})
+	}
+	if transferMods {
+		err := files.ImportMods(src, dest)
+		if err != nil {
+			errorText = fmt.Sprintf("%s\n%s", errorText, err)
+		}
+	}
 
-	return btn
+	if len(errorText) > 0 {
+		dialogs.ShowErrorDialog(fmt.Errorf("%s", errorText))
+		return
+	}
+
+	closeDialog()
 }
