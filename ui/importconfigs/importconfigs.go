@@ -191,5 +191,7 @@ func importFiles() {
 		return
 	}
 
+	dialogs.ShowInformationDialog("Import Successful", "The import was successful.")
+
 	closeDialog()
 }
