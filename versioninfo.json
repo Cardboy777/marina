@@ -1,0 +1,43 @@
+{
+  "FixedFileInfo": {
+    "FileVersion": {
+      "Major": 0,
+      "Minor": 0,
+      "Patch": 0,
+      "Build": 1
+    },
+    "ProductVersion": {
+      "Major": 0,
+      "Minor": 0,
+      "Patch": 0,
+      "Build": 1
+    },
+    "FileFlagsMask": "3f",
+    "FileFlags ": "00",
+    "FileOS": "040004",
+    "FileType": "01",
+    "FileSubType": "00"
+  },
+  "StringFileInfo": {
+    "Comments": "Unofficial launcher & version manager for the PC ports made by Harbour Masters.",
+    "CompanyName": "",
+    "FileDescription": "Unofficial launcher & version manager for the PC ports made by Harbour Masters.",
+    "FileVersion": "v0.0.0.1",
+    "InternalName": "",
+    "LegalCopyright": "",
+    "LegalTrademarks": "",
+    "OriginalFilename": "marina-windows.exe",
+    "PrivateBuild": "",
+    "ProductName": "Marina",
+    "ProductVersion": "v0.0.0.1",
+    "SpecialBuild": ""
+  },
+  "VarFileInfo": {
+    "Translation": {
+      "LangID": "0409",
+      "CharsetID": "04B0"
+    }
+  },
+  "IconPath": "build/assets/marina.ico",
+  "ManifestPath": ""
+}
