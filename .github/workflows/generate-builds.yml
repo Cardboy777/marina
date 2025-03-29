@@ -88,6 +88,9 @@ jobs:
       - name: Download Dependencies
         run: go get
 
+      - name: Generate Version Info
+        run: go generate
+
       - name: Build
         run: go build -ldflags "-s -w -H=windowsgui -extldflags '-static' -X 'marina/constants.AppVersion=${{ github.runId }}'" -o marina.exe
 
