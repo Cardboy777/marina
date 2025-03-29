@@ -89,7 +89,9 @@ jobs:
         run: go get
 
       - name: Generate Version Info
-        run: go generate
+        run: |
+          go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
+          go generate
 
       - name: Build
         run: go build -ldflags "-s -w -H=windowsgui -extldflags '-static' -X 'marina/constants.AppVersion=${{ github.runId }}'" -o marina.exe
