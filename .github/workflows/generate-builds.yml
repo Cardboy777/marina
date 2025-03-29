@@ -93,7 +93,8 @@ jobs:
           export GOBIN=$HOME/go/bin
           export PATH=$PATH:$GOBIN
           go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
-          echo $GOBIN
+          echo $PATH
+          ls -la $GOBIN
           go generate
 
       - name: Build
