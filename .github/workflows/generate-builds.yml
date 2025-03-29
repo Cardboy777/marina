@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir -p build/linux/AppDir/usr/bin
           mkdir -p build/linux/AppDir/usr/share/icons/hicolor/48x48/apps
-          mkdir -p build/linux/AppDir/usr/share/icons/scalable/apps
+          mkdir -p build/linux/AppDir/usr/share/icons/hicolor/scalable/apps
           cp build/assets/marina.png build/linux/AppDir/usr/share/icons/hicolor/48x48/apps
           cp build/assets/marina.ico build/linux/AppDir/usr/share/icons/hicolor/scalable/apps
           cp -r build/linux/* .
