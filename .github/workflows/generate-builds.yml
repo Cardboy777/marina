@@ -90,10 +90,7 @@ jobs:
 
       - name: Generate Version Info
         run: |
-          go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
-          printenv
-          echo $GOBIN
-          ls -la $GOBIN
+          go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo
           go generate
 
       - name: Build
