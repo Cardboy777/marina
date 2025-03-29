@@ -20,15 +20,15 @@
   },
   "StringFileInfo": {
     "Comments": "Unofficial launcher & version manager for the PC ports made by Harbour Masters.",
-    "CompanyName": "",
+    "CompanyName": "cardboy777",
     "FileDescription": "Unofficial launcher & version manager for the PC ports made by Harbour Masters.",
     "FileVersion": "v0.0.0.1",
-    "InternalName": "",
+    "InternalName": "marina.exe",
     "LegalCopyright": "",
     "LegalTrademarks": "",
-    "OriginalFilename": "marina-windows.exe",
+    "OriginalFilename": "marina.go",
     "PrivateBuild": "",
-    "ProductName": "Marina",
+    "ProductName": "marina",
     "ProductVersion": "v0.0.0.1",
     "SpecialBuild": ""
   },
@@ -39,5 +39,5 @@
     }
   },
   "IconPath": "build/assets/marina.ico",
-  "ManifestPath": ""
+  "ManifestPath": "build/windows/manifest.xml"
 }
