@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          architecure: x64
 
       - name: Install container dependencies
         run: |
@@ -79,6 +80,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          architecure: x64
 
       - name: Install container dependencies
         run: |
@@ -116,6 +118,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          architecure: x64
 
       - name: Download Dependencies
         run: go get
