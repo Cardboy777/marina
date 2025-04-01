@@ -1,4 +1,4 @@
-//go:generate goversioninfo build/windows/versioninfo.json -64
+//go:generate goversioninfo build/windows/versioninfo.json
 package main
 
 import (
