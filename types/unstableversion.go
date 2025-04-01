@@ -2,6 +2,7 @@ package marina
 
 import (
 	"errors"
+	"fmt"
 	"runtime"
 	"time"
 )
@@ -11,6 +12,10 @@ type UnstableVersion struct {
 	ReleaseDate time.Time
 	Installed   bool
 	Repository  *Repository
+}
+
+func (d *UnstableVersion) GetName() string {
+	return fmt.Sprintf("Unstable - %s", d.ReleaseDate.Format(time.DateTime))
 }
 
 func (d *UnstableVersion) GetDownloadUrl() (string, error) {
@@ -25,4 +30,10 @@ func (d *UnstableVersion) GetDownloadUrl() (string, error) {
 		return d.Repository.LatestBuildUrls.Windows, nil
 	}
 	return "", errors.New("No compatible Version found")
+}
+
+func (d *UnstableVersion) CanDownload() bool {
+	_, err := d.GetDownloadUrl()
+
+	return err == nil
 }

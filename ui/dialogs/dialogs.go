@@ -17,6 +17,10 @@ func ShowErrorDialog(err error) {
 	dialog.Message("%s", err).Title("Encounterd an Error").Error()
 }
 
+func ShowInformationDialog(title string, message string) {
+	dialog.Message("%s", message).Title(title).Info()
+}
+
 func ShowConfirmDialog(title string, message string) bool {
 	ok := dialog.Message("%s", message).Title(title).YesNo()
 	return ok

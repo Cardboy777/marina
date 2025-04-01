@@ -2,12 +2,13 @@ package mainwindow
 
 import (
 	"fmt"
-	"image/color"
 	"marina/files"
 	"marina/launcher"
 	"marina/stores"
 	"marina/types"
 	"marina/ui/dialogs"
+	"marina/ui/fonts"
+	"marina/ui/importconfigs"
 	"time"
 
 	g "github.com/AllenDang/giu"
@@ -20,6 +21,29 @@ type VersionListItem struct {
 
 func (i *VersionListItem) isStableVersion() bool {
 	return i.StableVersion != nil
+}
+
+func (i *VersionListItem) getName() string {
+	if i.isStableVersion() {
+		return i.StableVersion.GetName()
+	}
+	return i.UnstableVersion.GetName()
+}
+
+func (i *VersionListItem) getCaption() string {
+	if i.isStableVersion() {
+		return i.StableVersion.ReleaseDate.Format(time.DateOnly)
+	}
+	return fmt.Sprintf("Commit: %s", i.UnstableVersion.Hash)
+}
+
+func (i *VersionListItem) getPopoupName() string {
+	return fmt.Sprintf("Options##%s", i.getName())
+}
+
+func (i *VersionListItem) openPopoup() {
+	g.OpenPopup(i.getPopoupName())
+	g.Update()
 }
 
 func (i *VersionListItem) getWidget() *g.TableRowWidget {
@@ -41,22 +65,11 @@ func (i *VersionListItem) getWidget() *g.TableRowWidget {
 	)
 }
 
-var subTextColor = color.RGBA{217, 217, 217, 255}
-
 func (i *VersionListItem) getInfo() *g.ColumnWidget {
-	if i.isStableVersion() {
-		return g.Column(
-			g.Label(i.StableVersion.Name),
-			g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(11).To(
-				g.Label(i.StableVersion.ReleaseDate.Format(time.DateOnly)),
-			),
-		)
-	}
-
 	return g.Column(
-		g.Label(fmt.Sprintf("Develop - %s", i.UnstableVersion.ReleaseDate.Format(time.DateTime))),
-		g.Style().SetColor(g.StyleColorText, subTextColor).SetFontSize(11).To(
-			g.Label(fmt.Sprintf("Commit: %s", i.UnstableVersion.Hash)),
+		g.Label(i.getName()),
+		g.Style().SetColor(g.StyleColorText, fonts.ColorCaption).SetFontSize(fonts.CaptionSize).To(
+			g.Label(i.getCaption()),
 		),
 	)
 }
@@ -67,13 +80,32 @@ func (i *VersionListItem) getButtons() *g.RowWidget {
 
 	if isInstalled {
 		return g.Row(
-			g.Button("Open").OnClick(i.openDir),
-			g.Button("Delete").OnClick(i.delete),
-			g.Button("Play").OnClick(i.play),
+			g.Button("").OnClick(i.openPopoup),
+			g.Popup(i.getPopoupName()).Layout(
+				g.Column(
+					g.Button(" Open").OnClick(i.openDir),
+					g.Button("󰋺 Import").OnClick(i.importConfig),
+					g.Separator(),
+					g.Style().SetColor(g.StyleColorText, fonts.ColorDestructive).To(
+						g.Button(" Delete").OnClick(i.delete),
+					),
+					importconfigs.GetImportDialog(),
+				),
+			).Flags(g.WindowFlagsNoMove),
+			g.Button(" Play").OnClick(i.play),
 		)
 	}
 
-	return g.Row(g.Button("Install").OnClick(i.install))
+	var canDownload bool
+	if i.isStableVersion() {
+		canDownload = i.StableVersion.CanDownload()
+	} else {
+		canDownload = i.UnstableVersion.CanDownload()
+	}
+
+	return g.Row(
+		g.Button(" Install").Disabled(!canDownload).OnClick(i.install),
+	)
 }
 
 func (i *VersionListItem) install() {
@@ -101,6 +133,10 @@ func (i *VersionListItem) play() {
 }
 
 func (i *VersionListItem) delete() {
+	if !dialogs.ShowConfirmDialog("Delete?", "Delete version? Configurations, Saves, and Mods will be permanently lost.") {
+		return
+	}
+
 	var err error
 	if i.isStableVersion() {
 		err = files.DeleteVersion(i.StableVersion)
@@ -122,6 +158,14 @@ func (i *VersionListItem) openDir() {
 	}
 
 	dialogs.OpenDirectory(dir)
+}
+
+func (i *VersionListItem) importConfig() {
+	if i.isStableVersion() {
+		importconfigs.ShowDialogStable(i.StableVersion)
+	} else {
+		importconfigs.ShowDialogUnstable(i.UnstableVersion)
+	}
 }
 
 func getVersionListItems() *[]VersionListItem {

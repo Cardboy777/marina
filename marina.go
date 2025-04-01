@@ -1,6 +1,9 @@
+//go:generate goversioninfo build/windows/versioninfo.json
 package main
 
 import (
+	_ "embed"
+	"marina/assets"
 	"marina/db"
 	"marina/files"
 	"marina/settings"
@@ -10,6 +13,7 @@ import (
 func main() {
 	settings.Init()
 	files.Init()
+	assets.LoadAssets()
 	db.Init()
 	for {
 		ui.Start()

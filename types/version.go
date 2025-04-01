@@ -29,7 +29,11 @@ func (d *Version) GetDownloadUrl() (string, error) {
 	return "", errors.New("No compatible Version found")
 }
 
-func (d *Version) IsOSCompatible() bool {
+func (d *Version) GetName() string {
+	return d.Name
+}
+
+func (d *Version) CanDownload() bool {
 	_, err := d.GetDownloadUrl()
 	return err == nil
 }

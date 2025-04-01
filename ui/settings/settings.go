@@ -38,7 +38,7 @@ func ShowDialog() {
 }
 
 func chooseDirButton() *g.ButtonWidget {
-	btn := g.Button("Select")
+	btn := g.Button("")
 
 	btn.OnClick(func() {
 		val, err := dialogs.ShowDirectoryPickerDialog("Choose Install Directory")

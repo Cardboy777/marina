@@ -16,16 +16,10 @@ func RefreshVersions(force bool) {
 }
 
 func GetToolbar() *g.AlignmentSetter {
-	refreshBtn := g.Button("Refresh")
-	refreshBtn.OnClick(func() { RefreshVersions(true) })
-
-	settingsBtn := g.Button("Settings")
-	settingsBtn.OnClick(settings.ShowDialog)
-
 	return g.Align(g.AlignRight).To(
 		g.Row(
-			settingsBtn,
-			refreshBtn,
+			g.Button(" Settings").OnClick(settings.ShowDialog),
+			g.Button(" Refresh").OnClick(func() { RefreshVersions(true) }),
 			settings.GetSettingsDialog(),
 		),
 	)

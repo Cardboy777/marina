@@ -13,6 +13,7 @@ SELECT
 		Installed
 FROM UnstableVersions
 WHERE Owner = ? AND Repository = ?
+ORDER BY ReleaseDate DESC
 `
 
 func GetUnstableVersionList(repo *marina.Repository) []marina.UnstableVersion {

@@ -1,7 +1,12 @@
 # appimage-builder recipe see https://appimage-builder.readthedocs.io for details
 version: 1
+
+script:
+  - apt-get update
+  - apt-get install squashfs-tools
+
 AppDir:
-  path: /mnt/Homes/reid/Repositories/marina/build/linux/AppDir
+  path: ./AppDir
   app_info:
     id: marina
     name: Marina
@@ -9,18 +14,33 @@ AppDir:
     version: latest
     exec: usr/bin/marina
     exec_args: $@
-  pacman:
-    include: []
-    exclude: []
+  apt:
+    arch:
+      - amd64
+    allow_unauthenticated: true
+    sources:
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy main restricted
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy universe
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates universe
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy multiverse
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates multiverse
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-backports main restricted
+          universe multiverse
+      - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted
+      - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security universe
+      - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security multiverse
+    include:
+      - libc6:amd64
   files:
     include:
-    - /lib64/ld-linux-x86-64.so.2
+      - lib64/ld-linux-x86-64.so.2
     exclude:
-    - usr/share/man
-    - usr/share/doc/*/README.*
-    - usr/share/doc/*/changelog.*
-    - usr/share/doc/*/NEWS.*
-    - usr/share/doc/*/TODO.*
+      - usr/share/man
+      - usr/share/doc/*/README.*
+      - usr/share/doc/*/changelog.*
+      - usr/share/doc/*/NEWS.*
+      - usr/share/doc/*/TODO.*
   test:
     fedora-30:
       image: appimagecrafters/tests-env:fedora-30
