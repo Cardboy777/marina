@@ -94,6 +94,7 @@ jobs:
         run: |
           go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo
           go generate
+          ls -l
 
       - name: Build
         run: go build -o marina.exe -gccgoflags="-v" -x -ldflags="-s -w -H=windowsgui -extldflags='-static' -X 'marina/constants.AppVersion=${{ github.runId }}'"

@@ -40,7 +40,7 @@ If I was a good developer there would be tests.
 
 ## Support
 
-I created Marina both as a pet project to try out golang, and also as a proof of concept for what a version-manager & launcher would look like for these projects. There will surely be many bugs. I will try to fix anything major and within my ability, but I don't plan to maintain this project indefinitely. Don't expect major breakages to be resolved with any urgency.
+I created Marina both as a pet project to try out golang, and also as a proof of concept for what a version-manager & launcher could look like for these projects. There will surely be many bugs. I will try to fix anything major and within my ability, but I don't plan to maintain this project indefinitely. Don't expect major breakages to be resolved with any urgency.
 
 > [!CAUTION]
 > This alpha software and part of its feature-set includes deleting files. Be VERY careful when modifying the install location. [See Here](#testing)
