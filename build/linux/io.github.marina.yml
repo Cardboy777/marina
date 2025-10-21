@@ -44,4 +44,4 @@ modules:
       - install -Dm644 build/linux/io.github.marina.metainfo.xml /app/share/metainfo/io.github.marina.metainfo.xml
     sources:
       - type: dir
-        path: .
+        path: ../..
