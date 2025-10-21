@@ -43,7 +43,20 @@ func runGame(exePath string, onClose func(error)) {
 	args := os.Args
 
 	workingDirectory := filepath.Dir(exePath)
-	cmd := exec.Command(exePath, args[1:]...)
+
+	var cmd *exec.Cmd
+
+	// Check if running inside Flatpak
+	if isRunningInFlatpak() {
+		// Use flatpak-spawn to run on host system (escapes sandbox)
+		spawnArgs := []string{"--host", exePath}
+		spawnArgs = append(spawnArgs, args[1:]...)
+		cmd = exec.Command("flatpak-spawn", spawnArgs...)
+	} else {
+		// Normal execution outside Flatpak
+		cmd = exec.Command(exePath, args[1:]...)
+	}
+
 	cmd.Dir = workingDirectory
 	cmd.Env = append(os.Environ(), fmt.Sprintf("SHIP_HOME=%s", workingDirectory))
 
@@ -55,6 +68,12 @@ func runGame(exePath string, onClose func(error)) {
 
 	fmt.Println("Successfully closed game.")
 	onClose(nil)
+}
+
+func isRunningInFlatpak() bool {
+	// Flatpak always provides this file inside the sandbox
+	_, err := os.Stat("/.flatpak-info")
+	return err == nil
 }
 
 func getGameExecutablePath(dirName string) string {

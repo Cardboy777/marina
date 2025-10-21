@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Marina
+Exec=marina
+Terminal=false
+Icon=io.github.marina
+Categories=Game;Utility;
+Comment=Unofficial launcher for Harbour Masters' projects
+Keywords=game;launcher;harbour;masters

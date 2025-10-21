@@ -1,0 +1,56 @@
+app-id: io.github.marina
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.golang
+command: marina
+
+finish-args:
+  # X11 + XShm access
+  - --share=ipc
+  - --socket=x11
+  # OpenGL access
+  - --device=dri
+  # Network access for GitHub API
+  - --share=network
+  # Access to home directory for ROMs and game files
+  - --filesystem=home
+  # Audio (in case games need it)
+  - --socket=pulseaudio
+  # Flatpak spawn access to run AppImages on host
+  - --talk-name=org.freedesktop.Flatpak
+
+modules:
+  - name: marina
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/golang/bin
+      build-args:
+        - --share=network
+      env:
+        GOBIN: /app/bin
+        GOROOT: /usr/lib/sdk/golang
+    build-commands:
+      # Download dependencies
+      - |
+        . /usr/lib/sdk/golang/enable.sh
+        export GOPATH=$PWD/go
+        go mod download
+      # Build the application
+      - |
+        . /usr/lib/sdk/golang/enable.sh
+        export GOPATH=$PWD/go
+        go build -o marina -ldflags="-s -w" .
+      # Install binary
+      - install -Dm755 marina /app/bin/marina
+      # Install desktop file
+      - install -Dm644 build/linux/io.github.marina.desktop /app/share/applications/io.github.marina.desktop
+      # Install icons
+      - install -Dm644 build/assets/marina.png /app/share/icons/hicolor/48x48/apps/io.github.marina.png
+      - install -Dm644 build/assets/marina.svg /app/share/icons/hicolor/scalable/apps/io.github.marina.svg
+      # Install appdata
+      - install -Dm644 build/linux/io.github.marina.metainfo.xml /app/share/metainfo/io.github.marina.metainfo.xml
+    sources:
+      - type: dir
+        path: ../..
