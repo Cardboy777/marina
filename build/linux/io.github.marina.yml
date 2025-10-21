@@ -28,6 +28,11 @@ modules:
         GOBIN: /app/bin
         GOROOT: /usr/lib/sdk/golang
     build-commands:
+      # Download dependencies
+      - |
+        . /usr/lib/sdk/golang/enable.sh
+        export GOPATH=$PWD/go
+        go mod download
       # Build the application
       - |
         . /usr/lib/sdk/golang/enable.sh
