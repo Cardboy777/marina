@@ -18,6 +18,8 @@ finish-args:
   - --filesystem=home
   # Audio (in case games need it)
   - --socket=pulseaudio
+  # Flatpak spawn access to run AppImages on host
+  - --talk-name=org.freedesktop.Flatpak
 
 modules:
   - name: marina
