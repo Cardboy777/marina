@@ -3,10 +3,12 @@ module marina
 go 1.24.0
 
 require (
+	github.com/AllenDang/cimgui-go v1.3.0
 	github.com/AllenDang/giu v0.12.0
 	github.com/adrg/xdg v0.5.3
 	github.com/google/go-github/v68 v68.0.0
 	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/otiai10/copy v1.14.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
@@ -14,7 +16,6 @@ require (
 )
 
 require (
-	github.com/AllenDang/cimgui-go v1.3.0 // indirect
 	github.com/AllenDang/go-findfont v0.0.0-20200702051237-9f180485aeb8 // indirect
 	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/akavel/rsrc v0.10.2 // indirect
@@ -29,7 +30,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/napsy/go-css v0.0.0-20221107082635-4ed403047a64 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/otiai10/copy v1.14.1 // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect

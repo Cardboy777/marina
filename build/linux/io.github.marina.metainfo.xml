@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.marina</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Marina</name>
+  <summary>Unofficial launcher for Harbour Masters' projects</summary>
+
+  <description>
+    <p>
+      Marina is an unofficial launcher and version manager for the PC ports made by Harbour Masters.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Support for Ship of Harkinian, 2 Ship 2 Harkinian, and Starship</li>
+      <li>Quick access to downloads for all major versions</li>
+      <li>Access to latest development builds</li>
+      <li>Basic ROM validation and management</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.marina.desktop</launchable>
+
+  <categories>
+    <category>Game</category>
+    <category>Utility</category>
+  </categories>
+
+  <content_rating type="oars-1.1" />
+  <url type="homepage">https://github.com/Cardboy777/marina</url>
+  <url type="bugtracker">https://github.com/Cardboy777/marina/issues</url>
+
+  <releases>
+    <release version="latest" date="2025-01-01"/>
+  </releases>
+</component>
